@@ -21,7 +21,7 @@ import './App.css'
 function App() {
   return (
     <AuthProvider>
-      <Router>
+      <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <div className="min-h-screen bg-background font-sans antialiased">
           <Navbar />
           <main className="flex-1">

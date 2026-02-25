@@ -23,6 +23,7 @@ const Login = () => {
   const [errors, setErrors] = useState({})
 
   const from = location.state?.from?.pathname || '/'
+  const successMessage = location.state?.message
 
   const validateForm = () => {
     const newErrors = {}
@@ -69,6 +70,11 @@ const Login = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {successMessage && (
+              <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm text-center animate-in fade-in duration-300">
+                {successMessage}
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Email */}
               <div className="space-y-2">

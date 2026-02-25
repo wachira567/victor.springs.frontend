@@ -92,7 +92,7 @@ const Register = () => {
     })
 
     if (result.success) {
-      navigate('/')
+      navigate('/login', { state: { message: 'Account created successfully! Please check your email inbox for a link to verify your account.' } })
     }
   }
 
