@@ -17,6 +17,7 @@ const KYCVerificationBox = ({ user, onVerificationSubmit }) => {
     idNumber: '',
     phone: user?.phone || '',
     idDocument: null,
+    consentDocument: null,
     otp: '',
     otpToken: '',
     signatureMethod: 'electronic' // 'electronic' or 'manual'
@@ -77,6 +78,18 @@ const KYCVerificationBox = ({ user, onVerificationSubmit }) => {
     setFormData(prev => ({ ...prev, idDocument: e.target.files[0] }))
   }
 
+  const handleConsentFileChange = (e) => {
+    setFormData(prev => ({ ...prev, consentDocument: e.target.files[0] }))
+  }
+
+  const handleStep2Next = () => {
+    if (formData.signatureMethod === 'electronic') {
+      handleSubmit()
+    } else {
+      setStep(3)
+    }
+  }
+
   const handleSendOtp = async () => {
     if (step === 1) {
       if (!formData.firstName || !formData.lastName || !formData.idNumber || !formData.phone) {
@@ -124,6 +137,9 @@ const KYCVerificationBox = ({ user, onVerificationSubmit }) => {
       data.append('otp_token', formData.otpToken)
       if (formData.idDocument) {
         data.append('id_document', formData.idDocument)
+      }
+      if (formData.consentDocument && formData.signatureMethod === 'manual') {
+        data.append('consent_document', formData.consentDocument)
       }
 
       const token = localStorage.getItem('victorsprings_token')
@@ -299,8 +315,59 @@ const KYCVerificationBox = ({ user, onVerificationSubmit }) => {
               <Button variant="outline" onClick={() => setStep(1.5)} disabled={isSubmitting}>
                 Back
               </Button>
-              <Button onClick={handleSubmit} className="bg-victor-green hover:bg-victor-green-dark" disabled={isSubmitting}>
-                {isSubmitting ? 'Submitting...' : (formData.signatureMethod === 'electronic' ? 'Proceed to E-Sign' : 'Submit for Review')}
+              <Button onClick={handleStep2Next} className="bg-victor-green hover:bg-victor-green-dark" disabled={isSubmitting}>
+                {isSubmitting ? 'Submitting...' : (formData.signatureMethod === 'electronic' ? 'Submit & E-Sign' : 'Proceed to Upload')}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="space-y-6">
+            <div className="bg-gray-50 p-4 rounded-lg border flex items-start gap-4 mb-6">
+              <FileText className="h-6 w-6 text-gray-500 flex-shrink-0" />
+              <div>
+                <h4 className="font-semibold text-gray-900">Upload Manually Signed Document</h4>
+                <p className="text-sm text-gray-600 mt-1">
+                  Please upload a clear scan or photo of the physically signed Landlord Consent Agreement.
+                  (You can generate this PDF file using the markdown draft provided earlier).
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <Label>Signed Consent Agreement <span className="text-red-500">*</span></Label>
+              <div className="mt-2 border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer relative">
+                <Input 
+                  type="file" 
+                  accept="image/*,.pdf" 
+                  onChange={handleConsentFileChange}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+                <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                <p className="text-sm font-medium text-gray-900">
+                  {formData.consentDocument ? formData.consentDocument.name : 'Click to upload or drag and drop'}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">PNG, JPG, or PDF (Max 5MB)</p>
+              </div>
+            </div>
+
+            <div className="flex justify-between pt-4 border-t mt-8">
+              <Button variant="outline" onClick={() => setStep(2)} disabled={isSubmitting}>
+                Back
+              </Button>
+              <Button 
+                onClick={() => {
+                  if (!formData.consentDocument) {
+                    toast.error('Please upload your signed consent document.')
+                    return
+                  }
+                  handleSubmit()
+                }} 
+                className="bg-victor-green hover:bg-victor-green-dark" 
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Submitting...' : 'Complete Verification'}
               </Button>
             </div>
           </div>
