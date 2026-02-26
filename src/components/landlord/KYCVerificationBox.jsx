@@ -18,10 +18,9 @@ const KYCVerificationBox = ({ user, onVerificationSubmit }) => {
     phone: user?.phone || '',
     idDocumentFront: null,
     idDocumentBack: null,
-    consentDocument: null,
     otp: '',
     otpToken: '',
-    signatureMethod: 'electronic' // 'electronic' or 'manual'
+    digitalConsent: false
   })
 
   // Determine status
@@ -83,18 +82,7 @@ const KYCVerificationBox = ({ user, onVerificationSubmit }) => {
     setFormData(prev => ({ ...prev, idDocumentBack: e.target.files[0] }))
   }
 
-  const handleConsentFileChange = (e) => {
-    setFormData(prev => ({ ...prev, consentDocument: e.target.files[0] }))
-  }
-
-  const handleStep2Next = () => {
-    if (formData.signatureMethod === 'electronic') {
-      handleSubmit()
-    } else {
-      setStep(3)
-    }
-  }
-
+  // Step Handlers
   const handleSendOtp = async () => {
     if (step === 1) {
       if (!formData.firstName || !formData.lastName || !formData.idNumber || !formData.phone) {
@@ -136,6 +124,10 @@ const KYCVerificationBox = ({ user, onVerificationSubmit }) => {
   }
 
   const handleSubmit = async () => {
+    if (!formData.digitalConsent) {
+      toast.error('You must agree to the representation and consent agreement to proceed.')
+      return
+    }
     setIsSubmitting(true)
     try {
       const data = new FormData()
@@ -144,17 +136,15 @@ const KYCVerificationBox = ({ user, onVerificationSubmit }) => {
       data.append('last_name', formData.lastName)
       data.append('id_number', formData.idNumber)
       data.append('phone', formData.phone)
-      data.append('signature_method', formData.signatureMethod)
+      data.append('digital_consent', 'true')
       data.append('otp', formData.otp)
       data.append('otp_token', formData.otpToken)
+      
       if (formData.idDocumentFront) {
         data.append('id_document_front', formData.idDocumentFront)
       }
       if (formData.idDocumentBack) {
         data.append('id_document_back', formData.idDocumentBack)
-      }
-      if (formData.consentDocument && formData.signatureMethod === 'manual') {
-        data.append('consent_document', formData.consentDocument)
       }
 
       const token = localStorage.getItem('victorsprings_token')
@@ -312,96 +302,48 @@ const KYCVerificationBox = ({ user, onVerificationSubmit }) => {
               <div>
                 <h4 className="font-semibold text-gray-900">Landlord Representation & Consent Agreement</h4>
                 <p className="text-sm text-gray-600 mt-1">
-                  By signing this agreement, you attest under penalty of perjury that the information provided is accurate and that you are the legal owner or authorized manager of the properties you list.
+                  Please read the following agreement carefully. By consenting below, you form a legally binding agreement under penalty of perjury.
                 </p>
               </div>
             </div>
 
-            <div className="space-y-4">
-              <h4 className="font-medium">How would you like to sign this document?</h4>
+            <div className="border border-gray-200 rounded-lg p-6 bg-white max-h-96 overflow-y-auto text-sm text-gray-700 space-y-4">
+              <h5 className="font-bold text-gray-900">1. Representation of Ownership or Authority</h5>
+              <p>I attest that I am the legal owner of the properties I list on Victor Springs, or I have been explicitly and legally authorized by the owner to manage and lease these properties.</p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div 
-                  className={`border-2 rounded-xl p-4 cursor-pointer transition-all ${formData.signatureMethod === 'electronic' ? 'border-victor-green bg-victor-green/5' : 'border-gray-200 hover:border-victor-green/50'}`}
-                  onClick={() => setFormData(prev => ({...prev, signatureMethod: 'electronic'}))}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <h5 className="font-semibold text-gray-900">Electronic Signature</h5>
-                    {formData.signatureMethod === 'electronic' && <CheckCircle2 className="h-5 w-5 text-victor-green" />}
-                  </div>
-                  <p className="text-sm text-gray-500">An email will be immediately dispatched to your inbox with a secure link to review and sign the document online via Firma.</p>
-                </div>
+              <h5 className="font-bold text-gray-900">2. Accuracy of Information</h5>
+              <p>I certify that all information provided in this KYC verification, including my name, National Identification, and contact phone number, is strictly accurate and belongs to me.</p>
 
-                <div 
-                  className={`border-2 rounded-xl p-4 cursor-pointer transition-all ${formData.signatureMethod === 'manual' ? 'border-victor-green bg-victor-green/5' : 'border-gray-200 hover:border-victor-green/50'}`}
-                  onClick={() => setFormData(prev => ({...prev, signatureMethod: 'manual'}))}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <h5 className="font-semibold text-gray-900">Manual (Wet Signature)</h5>
-                    {formData.signatureMethod === 'manual' && <CheckCircle2 className="h-5 w-5 text-victor-green" />}
-                  </div>
-                  <p className="text-sm text-gray-500">Upload a scan/photo of a physically signed Consent Agreement that you have prepared yourself.</p>
-                </div>
-              </div>
+              <h5 className="font-bold text-gray-900">3. Anti-Fraud & Legal Liability</h5>
+              <p>I understand that creating fraudulent property listings, collecting payments for properties I do not represent, or falsifying my identity constitutes criminal fraud. By submitting this form, I explicitly give Victor Springs Limited consent to share my verified identity profile with law enforcement agencies in the event of any tenant disputes, scam allegations, or fraudulent activities.</p>
+
+              <h5 className="font-bold text-gray-900">4. Data Processing Consent</h5>
+              <p>I consent to the collection, processing, and secure storage of my personal identification data as per the Data Protection Act, strictly for the purposes of identity verification and platform security.</p>
+            </div>
+
+            <div className="flex items-center space-x-3 mt-6 bg-gray-50 p-4 rounded-lg border">
+              <input 
+                type="checkbox" 
+                id="digitalConsent"
+                className="w-5 h-5 text-victor-green rounded focus:ring-victor-green border-gray-300"
+                checked={formData.digitalConsent}
+                onChange={(e) => setFormData(prev => ({ ...prev, digitalConsent: e.target.checked }))}
+              />
+              <label htmlFor="digitalConsent" className="font-medium text-gray-900 cursor-pointer">
+                I have read and explicitly consent to the terms of the Landlord Representation Agreement.
+              </label>
             </div>
 
             <div className="flex justify-between pt-4 border-t mt-8">
               <Button variant="outline" onClick={() => setStep(1.5)} disabled={isSubmitting}>
                 Back
               </Button>
-              <Button onClick={handleStep2Next} className="bg-victor-green hover:bg-victor-green-dark" disabled={isSubmitting}>
-                {isSubmitting ? 'Submitting...' : (formData.signatureMethod === 'electronic' ? 'Submit & E-Sign' : 'Proceed to Upload')}
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {step === 3 && (
-          <div className="space-y-6">
-            <div className="bg-gray-50 p-4 rounded-lg border flex items-start gap-4 mb-6">
-              <FileText className="h-6 w-6 text-gray-500 flex-shrink-0" />
-              <div>
-                <h4 className="font-semibold text-gray-900">Upload Manually Signed Document</h4>
-                <p className="text-sm text-gray-600 mt-1">
-                  Please upload a clear scan or photo of your physically signed Landlord Consent Agreement. 
-                  (Ensure all details match the identification documents provided in Step 1).
-                </p>
-              </div>
-            </div>
-
-            <div>
-              <Label>Signed Consent Agreement <span className="text-red-500">*</span></Label>
-              <div className="mt-2 border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer relative">
-                <Input 
-                  type="file" 
-                  accept="image/*,.pdf" 
-                  onChange={handleConsentFileChange}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                />
-                <Upload className="h-8 w-8 text-gray-400 mb-2" />
-                <p className="text-sm font-medium text-gray-900">
-                  {formData.consentDocument ? formData.consentDocument.name : 'Click to upload or drag and drop'}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">PNG, JPG, or PDF (Max 5MB)</p>
-              </div>
-            </div>
-
-            <div className="flex justify-between pt-4 border-t mt-8">
-              <Button variant="outline" onClick={() => setStep(2)} disabled={isSubmitting}>
-                Back
-              </Button>
               <Button 
-                onClick={() => {
-                  if (!formData.consentDocument) {
-                    toast.error('Please upload your signed consent document.')
-                    return
-                  }
-                  handleSubmit()
-                }} 
+                onClick={handleSubmit} 
                 className="bg-victor-green hover:bg-victor-green-dark" 
-                disabled={isSubmitting}
+                disabled={isSubmitting || !formData.digitalConsent}
               >
-                {isSubmitting ? 'Submitting...' : 'Complete Verification'}
+                {isSubmitting ? 'Submitting...' : 'Consent & Complete Verification'}
               </Button>
             </div>
           </div>
