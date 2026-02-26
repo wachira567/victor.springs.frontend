@@ -95,6 +95,7 @@ const AdminDashboard = () => {
   const [recentUsers, setRecentUsers] = useState([])
   const [allProperties, setAllProperties] = useState([])
   const [pendingProperties, setPendingProperties] = useState([])
+  const [pendingKyc, setPendingKyc] = useState([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -103,15 +104,17 @@ const AdminDashboard = () => {
         const token = localStorage.getItem('victorsprings_token')
         const headers = { Authorization: `Bearer ${token}` }
         
-        const [usersRes, propertiesRes, pendingRes] = await Promise.all([
+        const [usersRes, propertiesRes, pendingRes, kycRes] = await Promise.all([
           axios.get(`${API_URL}/users/`, { headers }),
           axios.get(`${API_URL}/properties/?per_page=1000`, { headers }),
-          axios.get(`${API_URL}/properties/pending`, { headers })
+          axios.get(`${API_URL}/properties/pending`, { headers }),
+          axios.get(`${API_URL}/users/kyc/pending`, { headers })
         ])
         
         setRecentUsers(usersRes.data.users || [])
         setAllProperties(propertiesRes.data.properties || [])
         setPendingProperties(pendingRes.data.properties || [])
+        setPendingKyc(kycRes.data.requests || [])
       } catch (error) {
         console.error('Error fetching admin data:', error)
       } finally {
@@ -125,6 +128,7 @@ const AdminDashboard = () => {
     totalUsers: recentUsers.length,
     totalProperties: allProperties.length,
     pendingApprovals: pendingProperties.length,
+    pendingKyc: pendingKyc.length,
     monthlyRevenue: 0,
     userGrowth: 12.5,
     propertyGrowth: 8.3,
@@ -140,6 +144,36 @@ const AdminDashboard = () => {
       approved: 'bg-green-100 text-green-800',
     }
     return styles[status] || 'bg-gray-100 text-gray-800'
+  }
+
+  const handleApproveKyc = async (docId) => {
+    try {
+      const token = localStorage.getItem('victorsprings_token')
+      await axios.post(`${API_URL}/users/kyc/${docId}/approve`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      setPendingKyc(prev => prev.filter(req => req.document.id !== docId))
+      // toast.success('KYC Approved')
+    } catch (error) {
+      console.error('Failed to approve KYC', error)
+      // toast.error('Failed to approve')
+    }
+  }
+
+  const handleRejectKyc = async (docId) => {
+    const reason = prompt("Reason for rejection:")
+    if (!reason) return
+    try {
+      const token = localStorage.getItem('victorsprings_token')
+      await axios.post(`${API_URL}/users/kyc/${docId}/reject`, { reason }, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      setPendingKyc(prev => prev.filter(req => req.document.id !== docId))
+      // toast.success('KYC Rejected')
+    } catch (error) {
+      console.error('Failed to reject KYC', error)
+      // toast.error('Failed to reject')
+    }
   }
 
   return (
@@ -233,10 +267,18 @@ const AdminDashboard = () => {
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="properties">Properties</TabsTrigger>
             <TabsTrigger value="approvals">
-              Approvals
+              Properties
               {stats.pendingApprovals > 0 && (
                 <Badge variant="destructive" className="ml-2">
                   {stats.pendingApprovals}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="kyc">
+              KYC Verifications
+              {stats.pendingKyc > 0 && (
+                <Badge variant="destructive" className="ml-2">
+                  {stats.pendingKyc}
                 </Badge>
               )}
             </TabsTrigger>
@@ -446,6 +488,57 @@ const AdminDashboard = () => {
                       </div>
                     </div>
                   ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="kyc">
+            <Card>
+              <CardHeader>
+                <CardTitle>Pending KYC Identity Verifications</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {pendingKyc.length === 0 ? (
+                    <p className="text-gray-500 text-center py-4">No pending KYC verifications.</p>
+                  ) : (
+                    pendingKyc.map(({ user, document }) => (
+                      <div key={document.id} className="p-4 border rounded-lg bg-white">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h4 className="font-semibold">{user.name} <span className="text-gray-400 text-sm font-normal">({user.email})</span></h4>
+                            <p className="text-sm text-gray-600">ID Number: {user.id_number || 'N/A'}</p>
+                            <p className="text-sm text-gray-600">Phone: {user.phone}</p>
+                            <p className="text-xs text-gray-400 mt-1">
+                              Submitted {formatDate(document.created_at)}
+                            </p>
+                          </div>
+                          <Badge className="bg-yellow-100 text-yellow-800">
+                            Pending Review
+                          </Badge>
+                        </div>
+                        <div className="flex gap-2 mt-4">
+                          <Button 
+                            variant="outline"
+                            className="flex-1"
+                            onClick={() => window.open(`${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${document.file_url}`, '_blank')}
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            View ID Document
+                          </Button>
+                          <Button onClick={() => handleApproveKyc(document.id)} className="flex-1 bg-victor-green hover:bg-victor-green-dark">
+                            <Check className="h-4 w-4 mr-2" />
+                            Approve
+                          </Button>
+                          <Button onClick={() => handleRejectKyc(document.id)} variant="outline" className="text-red-600 hover:bg-red-50 flex-1">
+                            <X className="h-4 w-4 mr-2" />
+                            Reject
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>

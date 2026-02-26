@@ -48,7 +48,7 @@ const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || ''
 
 const SubmitProperty = () => {
   const navigate = useNavigate()
-  const { hasRole } = useAuth()
+  const { hasRole, user } = useAuth()
   const [step, setStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [uploadedImages, setUploadedImages] = useState([])
@@ -90,6 +90,28 @@ const SubmitProperty = () => {
             <div className="flex gap-3 justify-center">
               <Button variant="outline" onClick={() => navigate('/')}>
                 Go Home
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // Redirect if unverified landlord
+  if (hasRole('landlord') && !hasRole('super_admin') && user?.verification_status !== 'verified') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Card className="max-w-md">
+          <CardContent className="p-8 text-center">
+            <Shield className="h-16 w-16 mx-auto mb-4 text-yellow-500" />
+            <h2 className="text-xl font-bold mb-2">Identity Verification Required</h2>
+            <p className="text-gray-600 mb-6">
+              To protect our community from fraud, all landlords must complete identity verification (KYC) before listing properties.
+            </p>
+            <div className="flex justify-center">
+              <Button onClick={() => navigate('/landlord')} className="bg-victor-green hover:bg-victor-green-dark">
+                Verify Identity in Dashboard
               </Button>
             </div>
           </CardContent>

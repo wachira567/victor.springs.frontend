@@ -16,12 +16,13 @@ import {
   Phone,
   Mail,
   Calendar,
-  Check,
   Clock,
   AlertCircle,
-  ArrowUpRight
+  ArrowUpRight,
+  ShieldAlert
 } from 'lucide-react'
 import { formatPrice, formatDate } from '@/lib/utils'
+import KYCVerificationBox from '@/components/landlord/KYCVerificationBox'
 
 const LandlordDashboard = () => {
   const navigate = useNavigate()
@@ -101,15 +102,31 @@ const LandlordDashboard = () => {
           </div>
           <Button 
             className="mt-4 sm:mt-0 bg-victor-green hover:bg-victor-green-dark"
-            onClick={() => navigate('/submit-property')}
+            onClick={() => {
+              if (user?.verification_status !== 'verified') {
+                setActiveTab('overview')
+                return // Will show toast below or let them see the KYC box
+              }
+              navigate('/submit-property')
+            }}
+            disabled={user?.verification_status !== 'verified'}
           >
             <Plus className="h-4 w-4 mr-2" />
             List New Property
           </Button>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {/* KYC Verification Gate */}
+        <KYCVerificationBox user={user} onVerificationSubmit={() => {
+          // You might trigger a user context refresh here
+          window.location.reload() 
+        }} />
+
+        {/* Only show Dashboard content if Verified */}
+        {user?.verification_status === 'verified' && (
+          <>
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -322,6 +339,8 @@ const LandlordDashboard = () => {
             </div>
           </TabsContent>
         </Tabs>
+        </>
+        )}
       </div>
     </div>
   )
