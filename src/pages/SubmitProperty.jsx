@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
@@ -7,7 +7,6 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
   SelectContent,
@@ -18,7 +17,6 @@ import {
 import { 
   Upload, 
   MapPin, 
-  Home, 
   Bed, 
   Bath, 
   Maximize,
@@ -33,13 +31,19 @@ import {
   Loader2,
   ArrowLeft,
   ArrowRight,
-  Info
+  Info,
+  Plus,
+  Trash2
 } from 'lucide-react'
 import { toast } from 'sonner'
+import Map, { Marker, NavigationControl } from 'react-map-gl/mapbox'
+import 'mapbox-gl/dist/mapbox-gl.css'
+
+const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || ''
 
 const SubmitProperty = () => {
   const navigate = useNavigate()
-  const { user, hasRole } = useAuth()
+  const { hasRole } = useAuth()
   const [step, setStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [uploadedImages, setUploadedImages] = useState([])
@@ -48,16 +52,19 @@ const SubmitProperty = () => {
     title: '',
     description: '',
     propertyType: '',
-    price: '',
-    location: '',
+    tenantAgreementFee: '',
+    city: '',
     address: '',
-    bedrooms: '',
-    bathrooms: '',
-    area: '',
-    amenities: [],
-    availableFrom: '',
-    minimumStay: '',
-    deposit: '',
+    locationDescription: '',
+    latitude: -1.2921, // Nairobi default
+    longitude: 36.8219,
+    units: []
+  })
+
+  const [viewState, setViewState] = useState({
+    longitude: 36.8219,
+    latitude: -1.2921,
+    zoom: 12
   })
 
   // Redirect if not landlord
@@ -71,12 +78,9 @@ const SubmitProperty = () => {
             <p className="text-gray-600 mb-4">
               You need a landlord account to list properties. Upgrade your account to get started.
             </p>
-            <div className="flex gap-3">
+            <div className="flex gap-3 justify-center">
               <Button variant="outline" onClick={() => navigate('/')}>
                 Go Home
-              </Button>
-              <Button className="bg-victor-green hover:bg-victor-green-dark">
-                Become a Landlord
               </Button>
             </div>
           </CardContent>
@@ -95,12 +99,53 @@ const SubmitProperty = () => {
     { id: 'wifi', label: 'WiFi Ready', icon: Wifi },
   ]
 
-  const handleAmenityToggle = (amenityId) => {
+  const handleUnitAmenityToggle = (unitIndex, amenityId) => {
+    const newUnits = [...formData.units]
+    const unit = newUnits[unitIndex]
+    if (unit.amenities.includes(amenityId)) {
+      unit.amenities = unit.amenities.filter(a => a !== amenityId)
+    } else {
+      unit.amenities.push(amenityId)
+    }
+    setFormData({ ...formData, units: newUnits })
+  }
+
+  const addUnit = () => {
+    setFormData({
+      ...formData,
+      units: [
+        ...formData.units,
+        {
+          id: Date.now().toString(),
+          type: '',
+          vacantCount: 1,
+          price: '',
+          bedrooms: 1,
+          bathrooms: 1,
+          area: '',
+          amenities: []
+        }
+      ]
+    })
+  }
+
+  const removeUnit = (index) => {
+    const newUnits = [...formData.units]
+    newUnits.splice(index, 1)
+    setFormData({ ...formData, units: newUnits })
+  }
+
+  const updateUnit = (index, field, value) => {
+    const newUnits = [...formData.units]
+    newUnits[index][field] = value
+    setFormData({ ...formData, units: newUnits })
+  }
+
+  const handleMapClick = (evt) => {
     setFormData(prev => ({
       ...prev,
-      amenities: prev.amenities.includes(amenityId)
-        ? prev.amenities.filter(a => a !== amenityId)
-        : [...prev.amenities, amenityId]
+      longitude: evt.lngLat.lng,
+      latitude: evt.lngLat.lat
     }))
   }
 
@@ -110,7 +155,6 @@ const SubmitProperty = () => {
       toast.error('Maximum 10 images allowed')
       return
     }
-    // Mock image upload - in real app, upload to Cloudinary
     const newImages = files.map(file => URL.createObjectURL(file))
     setUploadedImages(prev => [...prev, ...newImages])
     toast.success(`${files.length} image(s) uploaded`)
@@ -120,17 +164,22 @@ const SubmitProperty = () => {
     e.preventDefault()
     setIsSubmitting(true)
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    toast.success('Property submitted successfully! It will be reviewed shortly.')
-    navigate('/landlord')
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      toast.success('Property submitted successfully! It will be reviewed shortly.')
+      navigate('/landlord')
+    } catch (error) {
+      toast.error('Failed to submit property')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const steps = [
     { number: 1, title: 'Basic Info' },
-    { number: 2, title: 'Details' },
-    { number: 3, title: 'Amenities' },
+    { number: 2, title: 'Location' },
+    { number: 3, title: 'Units' },
     { number: 4, title: 'Photos' },
     { number: 5, title: 'Review' },
   ]
@@ -138,11 +187,11 @@ const SubmitProperty = () => {
   const canProceed = () => {
     switch (step) {
       case 1:
-        return formData.title && formData.propertyType && formData.price && formData.location
+        return formData.title && formData.propertyType && formData.description
       case 2:
-        return formData.bedrooms && formData.bathrooms && formData.area && formData.description
+        return formData.city && formData.address
       case 3:
-        return true
+        return formData.units.length > 0 && formData.units.every(u => u.type && u.price && u.area)
       case 4:
         return uploadedImages.length > 0
       default:
@@ -153,14 +202,13 @@ const SubmitProperty = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
-        {/* Header */}
         <div className="mb-8">
           <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900">List Your Property</h1>
-          <p className="text-gray-600">Fill in the details below to list your property on Victor Springs</p>
+          <p className="text-gray-600">Fill in the precise unit details to list on Victor Springs</p>
         </div>
 
         {/* Progress Steps */}
@@ -172,9 +220,7 @@ const SubmitProperty = () => {
                   step >= s.number ? 'text-victor-green' : 'text-gray-400'
                 }`}>
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center font-medium ${
-                    step >= s.number 
-                      ? 'bg-victor-green text-white' 
-                      : 'bg-gray-200'
+                    step >= s.number ? 'bg-victor-green text-white' : 'bg-gray-200'
                   }`}>
                     {step > s.number ? <Check className="h-5 w-5" /> : s.number}
                   </div>
@@ -196,199 +242,221 @@ const SubmitProperty = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Basic Information</CardTitle>
-                <CardDescription>Enter the basic details about your property</CardDescription>
+                <CardDescription>Enter the general details of the building/property wrapper</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
                   <Label htmlFor="title">Property Title *</Label>
                   <Input
                     id="title"
-                    placeholder="e.g., Modern 3-Bedroom Apartment in Kilimani"
+                    placeholder="e.g., Sunrise Apartments Complex"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   />
                 </div>
 
                 <div>
-                  <Label>Property Type *</Label>
+                  <Label>Property/Building Type *</Label>
                   <Select
                     value={formData.propertyType}
                     onValueChange={(value) => setFormData({ ...formData, propertyType: value })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select property type" />
+                      <SelectValue placeholder="Select building type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="apartment">Apartment</SelectItem>
-                      <SelectItem value="house">House</SelectItem>
-                      <SelectItem value="studio">Studio</SelectItem>
-                      <SelectItem value="villa">Villa</SelectItem>
-                      <SelectItem value="office">Office Space</SelectItem>
-                      <SelectItem value="commercial">Commercial</SelectItem>
+                      <SelectItem value="apartment">Apartment Building</SelectItem>
+                      <SelectItem value="house">Single Family House</SelectItem>
+                      <SelectItem value="condo">Condominium</SelectItem>
+                      <SelectItem value="mixed">Mixed Types</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
-                  <Label htmlFor="price">Monthly Rent (KES) *</Label>
+                  <Label htmlFor="tenantAgreementFee">Tenant Agreement Fee (Optional, KES)</Label>
                   <Input
-                    id="price"
+                    id="tenantAgreementFee"
                     type="number"
-                    placeholder="e.g., 50000"
-                    value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    placeholder="e.g., 5000"
+                    value={formData.tenantAgreementFee}
+                    onChange={(e) => setFormData({ ...formData, tenantAgreementFee: e.target.value })}
                   />
+                  <p className="text-xs text-gray-500 mt-1">Leave blank if not applicable.</p>
                 </div>
 
                 <div>
-                  <Label htmlFor="location">Location/Area *</Label>
-                  <div className="relative">
-                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="location"
-                      placeholder="e.g., Kilimani, Nairobi"
-                      className="pl-9"
-                      value={formData.location}
-                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="address">Full Address</Label>
-                  <Input
-                    id="address"
-                    placeholder="e.g., 123 Kilimani Road"
-                    value={formData.address}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Step 2: Details */}
-          {step === 2 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Property Details</CardTitle>
-                <CardDescription>Provide more details about your property</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="bedrooms">Bedrooms *</Label>
-                    <div className="relative">
-                      <Bed className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="bedrooms"
-                        type="number"
-                        placeholder="3"
-                        className="pl-9"
-                        value={formData.bedrooms}
-                        onChange={(e) => setFormData({ ...formData, bedrooms: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="bathrooms">Bathrooms *</Label>
-                    <div className="relative">
-                      <Bath className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="bathrooms"
-                        type="number"
-                        placeholder="2"
-                        className="pl-9"
-                        value={formData.bathrooms}
-                        onChange={(e) => setFormData({ ...formData, bathrooms: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="area">Area (m²) *</Label>
-                    <div className="relative">
-                      <Maximize className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="area"
-                        type="number"
-                        placeholder="120"
-                        className="pl-9"
-                        value={formData.area}
-                        onChange={(e) => setFormData({ ...formData, area: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="description">Description *</Label>
+                  <Label htmlFor="description">General Property Description *</Label>
                   <Textarea
                     id="description"
-                    placeholder="Describe your property, its features, and what makes it special..."
+                    placeholder="Describe the overall building, neighborhood, and shared amenities..."
                     rows={5}
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   />
                 </div>
+              </CardContent>
+            </Card>
+          )}
 
+          {/* Step 2: Location (Mapbox) */}
+          {step === 2 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Location & Map</CardTitle>
+                <CardDescription>Pinpoint your property and provide directions</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="availableFrom">Available From</Label>
+                    <Label htmlFor="city">City/Area *</Label>
                     <Input
-                      id="availableFrom"
-                      type="date"
-                      value={formData.availableFrom}
-                      onChange={(e) => setFormData({ ...formData, availableFrom: e.target.value })}
+                      id="city"
+                      placeholder="e.g., Nairobi, Kilimani"
+                      value={formData.city}
+                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                     />
                   </div>
                   <div>
-                    <Label htmlFor="deposit">Security Deposit (KES)</Label>
+                    <Label htmlFor="address">Full Address *</Label>
                     <Input
-                      id="deposit"
-                      type="number"
-                      placeholder="e.g., 100000"
-                      value={formData.deposit}
-                      onChange={(e) => setFormData({ ...formData, deposit: e.target.value })}
+                      id="address"
+                      placeholder="e.g., 123 Argwings Kodhek Rd"
+                      value={formData.address}
+                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                     />
                   </div>
+                </div>
+
+                <div>
+                  <Label>Drop a Pin on the Map *</Label>
+                  <p className="text-xs text-gray-500 mb-2">Click on the map to place the marker exactly where your property is.</p>
+                  <div className="h-[400px] w-full rounded-lg overflow-hidden border">
+                    <Map
+                      {...viewState}
+                      onMove={evt => setViewState(evt.viewState)}
+                      onClick={handleMapClick}
+                      mapStyle="mapbox://styles/mapbox/streets-v12"
+                      mapboxAccessToken={mapboxToken}
+                    >
+                      <NavigationControl position="top-right" />
+                      <Marker 
+                        longitude={formData.longitude} 
+                        latitude={formData.latitude} 
+                        color="red"
+                      />
+                    </Map>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="locationDescription">Location Directions / Landmarks (Optional)</Label>
+                  <Textarea
+                    id="locationDescription"
+                    placeholder="e.g., Opposite the big supermarket, blue gate..."
+                    rows={2}
+                    value={formData.locationDescription}
+                    onChange={(e) => setFormData({ ...formData, locationDescription: e.target.value })}
+                  />
                 </div>
               </CardContent>
             </Card>
           )}
 
-          {/* Step 3: Amenities */}
+          {/* Step 3: Units Config */}
           {step === 3 && (
             <Card>
-              <CardHeader>
-                <CardTitle>Amenities</CardTitle>
-                <CardDescription>Select the amenities available at your property</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                  {amenitiesList.map((amenity) => (
-                    <div
-                      key={amenity.id}
-                      onClick={() => handleAmenityToggle(amenity.id)}
-                      className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
-                        formData.amenities.includes(amenity.id)
-                          ? 'border-victor-green bg-victor-green/5'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <amenity.icon className={`h-5 w-5 ${
-                        formData.amenities.includes(amenity.id) ? 'text-victor-green' : 'text-gray-400'
-                      }`} />
-                      <span className={`text-sm font-medium ${
-                        formData.amenities.includes(amenity.id) ? 'text-victor-green' : 'text-gray-700'
-                      }`}>
-                        {amenity.label}
-                      </span>
-                      {formData.amenities.includes(amenity.id) && (
-                        <Check className="h-4 w-4 text-victor-green ml-auto" />
-                      )}
-                    </div>
-                  ))}
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Unit Configuration</CardTitle>
+                  <CardDescription>Add the specific vacant units available in this property</CardDescription>
                 </div>
+                <Button type="button" onClick={addUnit} variant="outline" className="border-victor-green text-victor-green hover:bg-victor-green/10">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Unit Type
+                </Button>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {formData.units.length === 0 ? (
+                  <div className="text-center p-8 border-2 border-dashed rounded-lg bg-gray-50">
+                    <Home className="h-10 w-10 text-gray-400 mx-auto mb-3" />
+                    <h3 className="text-lg font-medium text-gray-900">No units added</h3>
+                    <p className="text-sm text-gray-500 mb-4">Please add at least one unit type to continue.</p>
+                    <Button type="button" onClick={addUnit}>Add First Unit</Button>
+                  </div>
+                ) : (
+                  formData.units.map((unit, index) => (
+                    <div key={unit.id} className="p-4 border border-gray-200 rounded-lg bg-white relative shadow-sm">
+                      <div className="absolute top-4 right-4 text-red-500 hover:text-red-700 cursor-pointer p-1" onClick={() => removeUnit(index)}>
+                        <Trash2 className="h-5 w-5" />
+                      </div>
+                      <h4 className="font-semibold text-lg mb-4 text-victor-green">Unit {index + 1}</h4>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                          <Label>Unit Type *</Label>
+                          <Select value={unit.type} onValueChange={(val) => updateUnit(index, 'type', val)}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="e.g. 1 Bedroom" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Bedsitter">Bedsitter</SelectItem>
+                              <SelectItem value="Studio">Studio</SelectItem>
+                              <SelectItem value="1 Bedroom">1 Bedroom</SelectItem>
+                              <SelectItem value="2 Bedroom">2 Bedroom</SelectItem>
+                              <SelectItem value="3 Bedroom">3 Bedroom</SelectItem>
+                              <SelectItem value="4+ Bedroom">4+ Bedroom</SelectItem>
+                              <SelectItem value="Commercial Space">Commercial Space</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label>Rent Price (KES) *</Label>
+                          <Input type="number" value={unit.price} onChange={(e) => updateUnit(index, 'price', e.target.value)} placeholder="e.g. 25000" />
+                        </div>
+                        <div>
+                          <Label>Number of Vacant Units *</Label>
+                          <Input type="number" min="1" value={unit.vacantCount} onChange={(e) => updateUnit(index, 'vacantCount', parseInt(e.target.value) || 1)} />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                          <Label>Bedrooms</Label>
+                          <Input type="number" value={unit.bedrooms} onChange={(e) => updateUnit(index, 'bedrooms', parseInt(e.target.value) || 0)} />
+                        </div>
+                        <div>
+                          <Label>Bathrooms</Label>
+                          <Input type="number" value={unit.bathrooms} onChange={(e) => updateUnit(index, 'bathrooms', parseInt(e.target.value) || 0)} />
+                        </div>
+                        <div>
+                          <Label>Area (sq ft / m²)</Label>
+                          <Input type="number" value={unit.area} onChange={(e) => updateUnit(index, 'area', e.target.value)} placeholder="e.g. 45" />
+                        </div>
+                      </div>
+
+                      <div className="mt-4 pt-4 border-t">
+                        <Label className="mb-2 block">Specific Amenities for this Unit Type</Label>
+                        <div className="flex flex-wrap gap-2">
+                          {amenitiesList.map(amenity => {
+                            const isSelected = unit.amenities.includes(amenity.id)
+                            return (
+                              <Badge
+                                key={amenity.id}
+                                variant={isSelected ? "default" : "outline"}
+                                className={`cursor-pointer border py-1.5 ${isSelected ? 'bg-victor-green hover:bg-victor-green-dark border-transparent' : 'border-gray-300 text-gray-600 hover:bg-gray-100'}`}
+                                onClick={() => handleUnitAmenityToggle(index, amenity.id)}
+                              >
+                                {amenity.label}
+                                {isSelected && <Check className="h-3 w-3 ml-1" />}
+                              </Badge>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
               </CardContent>
             </Card>
           )}
@@ -398,15 +466,13 @@ const SubmitProperty = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Property Photos</CardTitle>
-                <CardDescription>Upload photos of your property (minimum 1, maximum 10)</CardDescription>
+                <CardDescription>Upload general property photos and photos of the units (max 10)</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50 hover:bg-gray-100 transition-colors">
                   <Upload className="h-12 w-12 mx-auto mb-4 text-gray-400" />
                   <p className="text-lg font-medium mb-2">Upload Photos</p>
-                  <p className="text-sm text-gray-500 mb-4">
-                    Drag and drop or click to select files
-                  </p>
+                  <p className="text-sm text-gray-500 mb-4">Drag and drop or click to select files</p>
                   <Input
                     type="file"
                     multiple
@@ -416,9 +482,9 @@ const SubmitProperty = () => {
                     onChange={handleImageUpload}
                   />
                   <Label htmlFor="photo-upload">
-                    <Button type="button" variant="outline" className="cursor-pointer">
+                    <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 cursor-pointer">
                       Select Photos
-                    </Button>
+                    </div>
                   </Label>
                 </div>
 
@@ -427,18 +493,18 @@ const SubmitProperty = () => {
                     <p className="text-sm font-medium mb-3">
                       Uploaded Photos ({uploadedImages.length}/10)
                     </p>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                       {uploadedImages.map((image, index) => (
-                        <div key={index} className="relative aspect-square">
+                        <div key={index} className="relative aspect-video">
                           <img
                             src={image}
                             alt={`Upload ${index + 1}`}
-                            className="w-full h-full object-cover rounded-lg"
+                            className="w-full h-full object-cover rounded-lg shadow-sm"
                           />
                           <button
                             type="button"
                             onClick={() => setUploadedImages(prev => prev.filter((_, i) => i !== index))}
-                            className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600"
+                            className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 shadow-md"
                           >
                             ×
                           </button>
@@ -456,66 +522,62 @@ const SubmitProperty = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Review Your Listing</CardTitle>
-                <CardDescription>Please review your property details before submitting</CardDescription>
+                <CardDescription>Verify all details before submitting to Victor Springs</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 text-sm bg-gray-50 p-4 rounded-lg">
                   <div>
-                    <span className="text-gray-500">Title:</span>
-                    <p className="font-medium">{formData.title}</p>
+                    <span className="text-gray-500 block text-xs uppercase tracking-wide">Property Title</span>
+                    <p className="font-semibold text-gray-900 text-base">{formData.title}</p>
                   </div>
                   <div>
-                    <span className="text-gray-500">Type:</span>
-                    <p className="font-medium capitalize">{formData.propertyType}</p>
+                    <span className="text-gray-500 block text-xs uppercase tracking-wide">Type</span>
+                    <p className="font-medium text-gray-900 capitalize">{formData.propertyType}</p>
                   </div>
-                  <div>
-                    <span className="text-gray-500">Price:</span>
-                    <p className="font-medium">KES {formData.price}/month</p>
+                  <div className="sm:col-span-2">
+                    <span className="text-gray-500 block text-xs uppercase tracking-wide">Location</span>
+                    <p className="font-medium text-gray-900">{formData.address}, {formData.city}</p>
                   </div>
-                  <div>
-                    <span className="text-gray-500">Location:</span>
-                    <p className="font-medium">{formData.location}</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Bedrooms:</span>
-                    <p className="font-medium">{formData.bedrooms}</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Bathrooms:</span>
-                    <p className="font-medium">{formData.bathrooms}</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Area:</span>
-                    <p className="font-medium">{formData.area} m²</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Photos:</span>
-                    <p className="font-medium">{uploadedImages.length} uploaded</p>
-                  </div>
+                  {formData.tenantAgreementFee && (
+                    <div>
+                      <span className="text-gray-500 block text-xs uppercase tracking-wide">Tenant Agreement Fee</span>
+                      <p className="font-medium text-gray-900">KES {formData.tenantAgreementFee}</p>
+                    </div>
+                  )}
                 </div>
 
                 <div>
-                  <span className="text-gray-500">Amenities:</span>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {formData.amenities.map(amenityId => {
-                      const amenity = amenitiesList.find(a => a.id === amenityId)
-                      return amenity ? (
-                        <Badge key={amenityId} variant="secondary">
-                          {amenity.label}
-                        </Badge>
-                      ) : null
-                    })}
+                  <h4 className="font-semibold text-lg border-b pb-2 mb-4 text-victor-green">Unit Breakdown ({formData.units.length})</h4>
+                  <div className="space-y-3">
+                    {formData.units.map((unit, idx) => (
+                      <div key={idx} className="flex flex-col sm:flex-row justify-between p-3 border rounded-lg bg-white shadow-sm">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-gray-900">{unit.vacantCount}x {unit.type}</span>
+                          </div>
+                          <div className="flex items-center gap-3 text-sm text-gray-500 mt-1">
+                            <span className="flex items-center gap-1"><Bed className="h-3 w-3" /> {unit.bedrooms}</span>
+                            <span className="flex items-center gap-1"><Bath className="h-3 w-3" /> {unit.bathrooms}</span>
+                            {unit.area && <span className="flex items-center gap-1"><Maximize className="h-3 w-3" /> {unit.area}</span>}
+                          </div>
+                        </div>
+                        <div className="text-right mt-2 sm:mt-0">
+                          <p className="font-bold text-victor-green">KES {unit.price}<span className="text-xs text-gray-500 font-normal">/mo per unit</span></p>
+                          <p className="text-xs text-gray-400 mt-1">{unit.amenities.length} amenities</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
-                <div className="bg-blue-50 p-4 rounded-lg">
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
                   <div className="flex items-start gap-3">
-                    <Info className="h-5 w-5 text-blue-500 mt-0.5" />
+                    <Info className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
                     <div>
                       <p className="font-medium text-blue-900">What happens next?</p>
-                      <p className="text-sm text-blue-700 mt-1">
-                        Your property will be reviewed by our team within 24-48 hours. 
-                        Once approved, it will be listed on Victor Springs.
+                      <p className="text-sm text-blue-800 mt-1">
+                        Your property will be reviewed by Victor Springs admins to ensure all details are correct. 
+                        Once approved, it will be listed to generate leads. We will handle tenant inquiries for you.
                       </p>
                     </div>
                   </div>
@@ -530,7 +592,7 @@ const SubmitProperty = () => {
               type="button"
               variant="outline"
               onClick={() => setStep(step - 1)}
-              disabled={step === 1}
+              disabled={step === 1 || isSubmitting}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Previous
@@ -539,17 +601,17 @@ const SubmitProperty = () => {
             {step < 5 ? (
               <Button
                 type="button"
-                className="bg-victor-green hover:bg-victor-green-dark"
+                className="bg-victor-green hover:bg-victor-green-dark text-white"
                 onClick={() => setStep(step + 1)}
                 disabled={!canProceed()}
               >
-                Next
+                Next Step
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             ) : (
               <Button
                 type="submit"
-                className="bg-victor-green hover:bg-victor-green-dark"
+                className="bg-brand hover:bg-brand/90 text-white min-w-[150px]"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
@@ -560,7 +622,7 @@ const SubmitProperty = () => {
                 ) : (
                   <>
                     <Check className="h-4 w-4 mr-2" />
-                    Submit Property
+                    Submit Listing
                   </>
                 )}
               </Button>
