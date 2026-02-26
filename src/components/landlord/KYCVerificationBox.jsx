@@ -101,6 +101,13 @@ const KYCVerificationBox = ({ user, onVerificationSubmit }) => {
         toast.error('Please fill in all required personal details.')
         return
       }
+      
+      // Enforce Country Code
+      if (!formData.phone.startsWith('+')) {
+        toast.error('Your phone number MUST start with your country code (e.g., +254).')
+        return
+      }
+      
       if (!formData.idDocumentFront || !formData.idDocumentBack) {
         toast.error('Please upload both the front and back of your National ID or Passport.')
         return
@@ -322,7 +329,7 @@ const KYCVerificationBox = ({ user, onVerificationSubmit }) => {
                     <h5 className="font-semibold text-gray-900">Electronic Signature</h5>
                     {formData.signatureMethod === 'electronic' && <CheckCircle2 className="h-5 w-5 text-victor-green" />}
                   </div>
-                  <p className="text-sm text-gray-500">Fastest method. Securely sign online using Firma.dev integration.</p>
+                  <p className="text-sm text-gray-500">An email will be immediately dispatched to your inbox with a secure link to review and sign the document online via Firma.</p>
                 </div>
 
                 <div 
@@ -333,7 +340,7 @@ const KYCVerificationBox = ({ user, onVerificationSubmit }) => {
                     <h5 className="font-semibold text-gray-900">Manual (Wet Signature)</h5>
                     {formData.signatureMethod === 'manual' && <CheckCircle2 className="h-5 w-5 text-victor-green" />}
                   </div>
-                  <p className="text-sm text-gray-500">Download the PDF, physically sign it, scan, and upload it back.</p>
+                  <p className="text-sm text-gray-500">Upload a scan/photo of a physically signed Consent Agreement that you have prepared yourself.</p>
                 </div>
               </div>
             </div>
@@ -356,8 +363,8 @@ const KYCVerificationBox = ({ user, onVerificationSubmit }) => {
               <div>
                 <h4 className="font-semibold text-gray-900">Upload Manually Signed Document</h4>
                 <p className="text-sm text-gray-600 mt-1">
-                  Please upload a clear scan or photo of the physically signed Landlord Consent Agreement.
-                  (You can generate this PDF file using the markdown draft provided earlier).
+                  Please upload a clear scan or photo of your physically signed Landlord Consent Agreement. 
+                  (Ensure all details match the identification documents provided in Step 1).
                 </p>
               </div>
             </div>
