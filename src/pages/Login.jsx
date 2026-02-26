@@ -45,7 +45,13 @@ const Login = () => {
 
     const result = await login(formData.email, formData.password)
     if (result.success) {
-      navigate(from, { replace: true })
+      if (result.user.role === 'landlord') {
+        navigate('/landlord', { replace: true })
+      } else if (result.user.role === 'admin') {
+        navigate('/admin', { replace: true })
+      } else {
+        navigate(from, { replace: true })
+      }
     }
   }
 
@@ -172,7 +178,13 @@ const Login = () => {
                   onSuccess={async (credentialResponse) => {
                     const result = await loginWithGoogle(credentialResponse.credential)
                     if (result.success) {
-                      navigate(from, { replace: true })
+                      if (result.user.role === 'landlord') {
+                        navigate('/landlord', { replace: true })
+                      } else if (result.user.role === 'admin') {
+                        navigate('/admin', { replace: true })
+                      } else {
+                        navigate(from, { replace: true })
+                      }
                     }
                   }}
                   onError={() => {

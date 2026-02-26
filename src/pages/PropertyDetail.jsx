@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useAuth } from '@/contexts/AuthContext'
 import axios from 'axios'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -31,8 +32,11 @@ import { formatPrice } from '@/lib/utils'
 const PropertyDetail = () => {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { hasRole } = useAuth()
   const [isFavorite, setIsFavorite] = useState(false)
   const [selectedImage, setSelectedImage] = useState(0)
+
+  const isLandlordView = hasRole('landlord')
 
   const [property, setProperty] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -74,13 +78,25 @@ const PropertyDetail = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Landlord View Banner */}
+      {isLandlordView && (
+        <div className="bg-yellow-50 border-b border-yellow-200">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-center gap-2 text-yellow-800">
+            <Shield className="h-4 w-4" />
+            <p className="font-medium text-sm">
+              You are viewing this property as a Landlord. Booking actions and applications are disabled.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Back Button & Actions */}
       <div className="bg-white border-b">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
-              onClick={() => navigate(-1)}
+              onClick={() => isLandlordView ? navigate('/landlord') : navigate(-1)}
               className="gap-2"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -267,65 +283,69 @@ const PropertyDetail = () => {
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="sticky top-24 space-y-6">
-              {/* Contact Card */}
-              <Card>
-                <CardContent className="p-6">
-                  <h3 className="font-semibold text-lg mb-4">Contact Landlord</h3>
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">
-                      <User className="h-8 w-8 text-gray-400" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-medium">{landlord.name || 'Verifying Landlord'}</h4>
-                        {landlord.name && (
-                          <Shield className="h-4 w-4 text-victor-green" />
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-500">Member since 2024</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button className="w-full bg-victor-green hover:bg-victor-green-dark" disabled={!landlord.phone}>
-                          <Phone className="h-4 w-4 mr-2" />
-                          Show Phone Number
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Contact Information</DialogTitle>
-                        </DialogHeader>
-                        <div className="text-center py-6">
-                          <p className="text-lg font-semibold">{landlord.phone || 'N/A'}</p>
-                          <p className="text-sm text-gray-500 mt-2">Mention you found this on Victor Springs</p>
+              {!isLandlordView && (
+                <>
+                  {/* Contact Card */}
+                  <Card>
+                    <CardContent className="p-6">
+                      <h3 className="font-semibold text-lg mb-4">Contact Landlord</h3>
+                      <div className="flex items-center gap-4 mb-6">
+                        <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">
+                          <User className="h-8 w-8 text-gray-400" />
                         </div>
-                      </DialogContent>
-                    </Dialog>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-medium">{landlord.name || 'Verifying Landlord'}</h4>
+                            {landlord.name && (
+                              <Shield className="h-4 w-4 text-victor-green" />
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-500">Member since 2024</p>
+                        </div>
+                      </div>
 
-                    <Button variant="outline" className="w-full">
-                      <Mail className="h-4 w-4 mr-2" />
-                      Send Message
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                      <div className="space-y-3">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button className="w-full bg-victor-green hover:bg-victor-green-dark" disabled={!landlord.phone}>
+                              <Phone className="h-4 w-4 mr-2" />
+                              Show Phone Number
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Contact Information</DialogTitle>
+                            </DialogHeader>
+                            <div className="text-center py-6">
+                              <p className="text-lg font-semibold">{landlord.phone || 'N/A'}</p>
+                              <p className="text-sm text-gray-500 mt-2">Mention you found this on Victor Springs</p>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
 
-              {/* Schedule Viewing Card */}
-              <Card>
-                <CardContent className="p-6">
-                  <h3 className="font-semibold text-lg mb-4">Schedule a Viewing</h3>
-                  <p className="text-gray-600 text-sm mb-4">
-                    Book a time to view this property in person. Our agents will show you around.
-                  </p>
-                  <Button variant="outline" className="w-full">
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Book Viewing
-                  </Button>
-                </CardContent>
-              </Card>
+                        <Button variant="outline" className="w-full">
+                          <Mail className="h-4 w-4 mr-2" />
+                          Send Message
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Schedule Viewing Card */}
+                  <Card>
+                    <CardContent className="p-6">
+                      <h3 className="font-semibold text-lg mb-4">Schedule a Viewing</h3>
+                      <p className="text-gray-600 text-sm mb-4">
+                        Book a time to view this property in person. Our agents will show you around.
+                      </p>
+                      <Button variant="outline" className="w-full">
+                        <Calendar className="h-4 w-4 mr-2" />
+                        Book Viewing
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </>
+              )}
 
               {/* Safety Tips */}
               <Card className="bg-blue-50 border-blue-100">

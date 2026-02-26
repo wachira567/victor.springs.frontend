@@ -1,5 +1,5 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { AuthProvider } from './contexts/AuthContext'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import Home from './pages/Home'
@@ -18,6 +18,14 @@ import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import './App.css'
 
+const NonLandlordRoute = ({ children }) => {
+  const { hasRole, isAuthenticated } = useAuth()
+  if (isAuthenticated && hasRole('landlord')) {
+    return <Navigate to="/landlord" replace />
+  }
+  return children
+}
+
 function App() {
   return (
     <AuthProvider>
@@ -26,20 +34,20 @@ function App() {
           <Navbar />
           <main className="flex-1">
             <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/properties" element={<Properties />} />
+              <Route path="/" element={<NonLandlordRoute><Home /></NonLandlordRoute>} />
+              <Route path="/properties" element={<NonLandlordRoute><Properties /></NonLandlordRoute>} />
               <Route path="/properties/:id" element={<PropertyDetail />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/dashboard" element={<NonLandlordRoute><Dashboard /></NonLandlordRoute>} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/landlord" element={<LandlordDashboard />} />
               <Route path="/submit-property" element={<SubmitProperty />} />
               <Route path="/verify-email" element={<VerifyEmail />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
+              <Route path="/about" element={<NonLandlordRoute><About /></NonLandlordRoute>} />
+              <Route path="/contact" element={<NonLandlordRoute><Contact /></NonLandlordRoute>} />
             </Routes>
           </main>
           <Footer />

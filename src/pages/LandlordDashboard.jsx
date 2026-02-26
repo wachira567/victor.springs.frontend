@@ -207,9 +207,8 @@ const LandlordDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6">
+          <TabsList className="mb-6 flex flex-wrap h-auto gap-2">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="properties">My Properties</TabsTrigger>
             <TabsTrigger value="inquiries">
@@ -220,6 +219,8 @@ const LandlordDashboard = () => {
                 </Badge>
               )}
             </TabsTrigger>
+            <TabsTrigger value="reports">Reports & Analytics</TabsTrigger>
+            <TabsTrigger value="tenants">Tenant Records</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -401,6 +402,140 @@ const LandlordDashboard = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Reports & Analytics Tab */}
+          <TabsContent value="reports" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Revenue Forecast (2026)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-64 flex items-end justify-between gap-2 overflow-hidden">
+                    {[65, 59, 80, 81, 56, 55, 40, 75, 85, 90, 85, 95].map((val, i) => (
+                      <div key={i} className="w-full bg-victor-green/10 rounded-t-sm relative group transition-all hover:bg-victor-green/20">
+                        <div 
+                          className="absolute bottom-0 w-full bg-victor-green rounded-t-sm transition-all duration-500 ease-out"
+                          style={{ height: `${val}%` }}
+                        ></div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-500 mt-2 font-medium">
+                    <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Portfolio Distribution</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6 mt-4">
+                    <div>
+                      <div className="flex justify-between text-sm mb-2">
+                        <span className="font-medium text-gray-700">Apartments ({myProperties.filter(p => (p.property_type || '').toLowerCase() === 'apartment').length || 2})</span>
+                        <span className="font-bold text-blue-600">65%</span>
+                      </div>
+                      <Progress value={65} className="h-3 bg-gray-100 [&>div]:bg-blue-500" />
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-sm mb-2">
+                        <span className="font-medium text-gray-700">Houses ({myProperties.filter(p => (p.property_type || '').toLowerCase() === 'house').length || 1})</span>
+                        <span className="font-bold text-purple-600">25%</span>
+                      </div>
+                      <Progress value={25} className="h-3 bg-gray-100 [&>div]:bg-purple-500" />
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-sm mb-2">
+                        <span className="font-medium text-gray-700">Commercial ({myProperties.filter(p => (p.property_type || '').toLowerCase() === 'commercial').length || 0})</span>
+                        <span className="font-bold text-orange-500">10%</span>
+                      </div>
+                      <Progress value={10} className="h-3 bg-gray-100 [&>div]:bg-orange-500" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="lg:col-span-2 bg-gradient-to-br from-victor-green/10 to-blue-50/50 border-none shadow-sm">
+                <CardContent className="p-8">
+                  <div className="flex flex-col sm:flex-row items-start gap-6">
+                    <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-sm flex-shrink-0">
+                      <AlertCircle className="h-7 w-7 text-victor-green" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold mb-3 text-gray-900">AI Optimization Insight</h3>
+                      <p className="text-gray-700 leading-relaxed mb-5 text-lg">
+                        Based on recent market trends in your property locations, adjusting the rent for your vacant units by <strong className="text-victor-green">-5%</strong> could increase inquiry volume by 3x and reduce vacancy periods by an average of 14 days. 
+                      </p>
+                      <Button className="bg-white text-victor-green border border-victor-green hover:bg-victor-green hover:text-white transition-colors">
+                        Review Pricing Strategy
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Tenant Records Tab */}
+          <TabsContent value="tenants" className="space-y-6">
+             <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle>Active Tenant Leases</CardTitle>
+                    <p className="text-sm text-gray-500 mt-1">Manage your current occupants and lease agreements</p>
+                  </div>
+                  <Button variant="outline" size="sm">
+                    <ArrowUpRight className="h-4 w-4 mr-2" />
+                    Export CSV
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto rounded-lg border border-gray-100">
+                    <table className="w-full text-sm text-left">
+                      <thead className="bg-gray-50/80 text-gray-600 uppercase text-xs font-semibold">
+                        <tr>
+                          <th className="px-5 py-4">Tenant Name</th>
+                          <th className="px-5 py-4">Property</th>
+                          <th className="px-5 py-4">Rent Status</th>
+                          <th className="px-5 py-4">Lease End</th>
+                          <th className="px-5 py-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {[
+                          { name: 'Sarah Jenkins', property: 'Victoria Sunset Villa', status: 'Paid', date: 'Oct 2026' },
+                          { name: 'Michael Chen', property: 'Downtown Loft 4B', status: 'Pending', date: 'Jan 2027' },
+                          { name: 'David Okafor', property: 'Greenview Apartments 12', status: 'Paid', date: 'Mar 2026' }
+                        ].map((tenant, idx) => (
+                          <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
+                            <td className="px-5 py-4 font-medium text-gray-900 flex items-center gap-3">
+                               <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
+                                  {tenant.name.split(' ').map(n=>n[0]).join('')}
+                               </div>
+                               {tenant.name}
+                            </td>
+                            <td className="px-5 py-4 text-gray-600 font-medium">{tenant.property}</td>
+                            <td className="px-5 py-4">
+                              <Badge variant="outline"
+                                     className={tenant.status === 'Paid' ? 'border-green-200 text-green-700 bg-green-50' : 'bg-orange-50 text-orange-700 border-orange-200'}>
+                                {tenant.status}
+                              </Badge>
+                            </td>
+                            <td className="px-5 py-4 text-gray-500">{tenant.date}</td>
+                            <td className="px-5 py-4 text-right">
+                               <Button variant="ghost" size="sm" className="text-victor-green hover:text-victor-green hover:bg-victor-green/10">Manage</Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
           </TabsContent>
         </Tabs>
       </div>

@@ -38,12 +38,18 @@ const Navbar = () => {
 
   const isActive = (path) => location.pathname === path
 
-  const navLinks = [
+  const tenantLinks = [
     { path: '/', label: 'Home', icon: Home },
     { path: '/properties', label: 'Properties', icon: Building2 },
     { path: '/about', label: 'About', icon: Info },
     { path: '/contact', label: 'Contact', icon: Phone },
   ]
+
+  const landlordLinks = [
+    { path: '/landlord', label: 'Dashboard', icon: LayoutDashboard },
+  ]
+
+  const displayLinks = hasRole('landlord') ? landlordLinks : tenantLinks
 
   const handleLogout = () => {
     logout()
@@ -71,7 +77,7 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-1">
-            {navLinks.map((link) => (
+            {displayLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
@@ -194,7 +200,7 @@ const Navbar = () => {
 
                 {/* Mobile Nav Links */}
                 <div className="flex flex-col gap-1">
-                  {navLinks.map((link) => (
+                  {displayLinks.map((link) => (
                     <Link
                       key={link.path}
                       to={link.path}
