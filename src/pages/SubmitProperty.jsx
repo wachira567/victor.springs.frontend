@@ -52,6 +52,7 @@ const SubmitProperty = () => {
   const [step, setStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [uploadedImages, setUploadedImages] = useState([])
+  const [imageFiles, setImageFiles] = useState([])
   
   const [formData, setFormData] = useState({
     title: '',
@@ -241,6 +242,7 @@ const SubmitProperty = () => {
     }
     const newImages = files.map(file => URL.createObjectURL(file))
     setUploadedImages(prev => [...prev, ...newImages])
+    setImageFiles(prev => [...prev, ...files])
     toast.success(`${files.length} image(s) uploaded`)
   }
 
@@ -271,6 +273,10 @@ const SubmitProperty = () => {
       if (formData.tenantAgreementFile) {
         submitData.append('tenant_agreement_file', formData.tenantAgreementFile)
       }
+
+      imageFiles.forEach(file => {
+        submitData.append('images', file)
+      })
 
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/properties`, {
         method: 'POST',
