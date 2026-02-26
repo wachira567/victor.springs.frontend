@@ -33,7 +33,8 @@ import {
   ArrowRight,
   Info,
   Plus,
-  Trash2
+  Trash2,
+  Home
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Map, { Marker, NavigationControl } from 'react-map-gl/mapbox'
