@@ -112,8 +112,8 @@ const Navbar = () => {
                     <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                       <Avatar className="h-9 w-9">
                         <AvatarImage src={user?.avatar} alt={user?.firstName} />
-                        <AvatarFallback className="bg-victor-green text-white text-sm">
-                          {user ? getInitials(`${user.firstName} ${user.lastName}`) : 'U'}
+                        <AvatarFallback className="bg-victor-green text-white">
+                          <User className="h-5 w-5" />
                         </AvatarFallback>
                       </Avatar>
                     </Button>
@@ -188,7 +188,7 @@ const Navbar = () => {
                     <Avatar className="h-10 w-10">
                       <AvatarImage src={user?.avatar} alt={user?.firstName} />
                       <AvatarFallback className="bg-victor-green text-white">
-                        {user ? getInitials(`${user.firstName} ${user.lastName}`) : 'U'}
+                        <User className="h-5 w-5" />
                       </AvatarFallback>
                     </Avatar>
                     <div>
