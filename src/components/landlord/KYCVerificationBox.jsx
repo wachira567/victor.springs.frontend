@@ -15,7 +15,7 @@ const KYCVerificationBox = ({ user, onVerificationSubmit }) => {
     middleName: '',
     lastName: '',
     idNumber: '',
-    phone: user?.phone || '',
+    phone: user?.phone === 'Not Provided' ? '' : (user?.phone || ''),
     idDocumentFront: null,
     idDocumentBack: null,
     otp: '',
@@ -349,16 +349,20 @@ const KYCVerificationBox = ({ user, onVerificationSubmit }) => {
 
             <div className="border border-gray-200 rounded-lg p-6 bg-white max-h-96 overflow-y-auto text-sm text-gray-700 space-y-4">
               <h5 className="font-bold text-gray-900">1. Representation of Ownership or Authority</h5>
-              <p>I attest that I am the legal owner of the properties I list on Victor Springs, or I have been explicitly and legally authorized by the owner to manage and lease these properties.</p>
+              <p>I attest and warrant under penalty of perjury that I am the legal owner of the properties I list on Victor Springs Limited, or I have been explicitly, legally, and contractually authorized by the rightful owner to manage, lease, and collect payments for these properties.</p>
               
-              <h5 className="font-bold text-gray-900">2. Accuracy of Information</h5>
-              <p>I certify that all information provided in this KYC verification, including my name, National Identification, and contact phone number, is strictly accurate and belongs to me.</p>
+              <h5 className="font-bold text-gray-900">2. Accuracy and Truthfulness of Information</h5>
+              <p>I certify that all information provided in this KYC (Know Your Customer) identity verification, including my full legal name, National Identification or Passport Number, and contact phone number, is strictly accurate, true, and belongs solely to me. I acknowledge that Victor Springs Limited reserves the right to independently verify this information through third-party agencies and government databases.</p>
 
-              <h5 className="font-bold text-gray-900">3. Anti-Fraud & Legal Liability</h5>
-              <p>I understand that creating fraudulent property listings, collecting payments for properties I do not represent, or falsifying my identity constitutes criminal fraud. By submitting this form, I explicitly give Victor Springs Limited consent to share my verified identity profile with law enforcement agencies in the event of any tenant disputes, scam allegations, or fraudulent activities.</p>
+              <h5 className="font-bold text-gray-900">3. Anti-Fraud, Indemnification & Legal Liability</h5>
+              <p>I understand and agree that creating fraudulent property listings, collecting payments or deposits for properties I do not represent, or falsifying my identity constitutes criminal fraud and obtaining money by false pretenses. I expressly agree to indemnify, defend, and hold harmless Victor Springs Limited, its directors, employees, and affiliates from any claims, damages, liabilities, costs, and expenses (including legal fees) arising from my actions, misrepresentations, or breach of this agreement.</p>
+              <p>By submitting this form and providing my digital signature/consent, I explicitly and irrevocably give Victor Springs Limited full consent to share my verified identity profile, transaction history, and digital audit trails (including IP addresses) with law enforcement agencies, cybercrime units, and relevant authorities in the event of any tenant disputes, scam allegations, suspected fraudulent activities, or as required by law.</p>
 
-              <h5 className="font-bold text-gray-900">4. Data Processing Consent</h5>
-              <p>I consent to the collection, processing, and secure storage of my personal identification data as per the Data Protection Act, strictly for the purposes of identity verification and platform security.</p>
+              <h5 className="font-bold text-gray-900">4. Data Processing Consent & Privacy</h5>
+              <p>I consent to the collection, processing, and secure storage of my personal identification data as per the Data Protection Act (2019) of Kenya, strictly for the purposes of identity verification, compliance, fraud prevention, and platform security.</p>
+              
+              <h5 className="font-bold text-gray-900">5. Termination & Access</h5>
+              <p>I acknowledge that Victor Springs Limited reserves the unilateral right to suspend, terminate, or restrict my access to the platform and withhold any pending payouts if I am found to have violated these terms, engaged in deceptive practices, or failed to maintain accurate KYC records.</p>
             </div>
 
             <div className="flex items-center space-x-3 mt-6 bg-gray-50 p-4 rounded-lg border">

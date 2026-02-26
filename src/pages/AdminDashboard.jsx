@@ -95,7 +95,7 @@ const AdminDashboard = () => {
   const [recentUsers, setRecentUsers] = useState([])
   const [allProperties, setAllProperties] = useState([])
   const [pendingProperties, setPendingProperties] = useState([])
-  const [pendingKyc, setPendingKyc] = useState([])
+  const [allKyc, setAllKyc] = useState([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -108,13 +108,13 @@ const AdminDashboard = () => {
           axios.get(`${API_URL}/users/`, { headers }),
           axios.get(`${API_URL}/properties/?per_page=1000`, { headers }),
           axios.get(`${API_URL}/properties/pending`, { headers }),
-          axios.get(`${API_URL}/users/kyc/pending`, { headers })
+          axios.get(`${API_URL}/users/kyc/all`, { headers })
         ])
         
         setRecentUsers(usersRes.data.users || [])
         setAllProperties(propertiesRes.data.properties || [])
         setPendingProperties(pendingRes.data.properties || [])
-        setPendingKyc(kycRes.data.requests || [])
+        setAllKyc(kycRes.data.requests || [])
       } catch (error) {
         console.error('Error fetching admin data:', error)
       } finally {
@@ -124,11 +124,13 @@ const AdminDashboard = () => {
     fetchAdminData()
   }, [])
 
+  const pendingKycCount = allKyc.filter(req => req.user.verification_status === 'pending').length
+
   const stats = {
     totalUsers: recentUsers.length,
     totalProperties: allProperties.length,
     pendingApprovals: pendingProperties.length,
-    pendingKyc: pendingKyc.length,
+    pendingKyc: pendingKycCount,
     monthlyRevenue: 0,
     userGrowth: 12.5,
     propertyGrowth: 8.3,
@@ -152,7 +154,12 @@ const AdminDashboard = () => {
       await axios.post(`${API_URL}/users/kyc/${userId}/approve`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      setPendingKyc(prev => prev.filter(req => req.user.id !== userId))
+      setAllKyc(prev => prev.map(req => {
+        if (req.user.id === userId) {
+          return { ...req, user: { ...req.user, verification_status: 'verified' } }
+        }
+        return req
+      }))
       // toast.success('KYC Approved')
     } catch (error) {
       console.error('Failed to approve KYC', error)
@@ -168,12 +175,41 @@ const AdminDashboard = () => {
       await axios.post(`${API_URL}/users/kyc/${userId}/reject`, { reason }, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      setPendingKyc(prev => prev.filter(req => req.user.id !== userId))
+      setAllKyc(prev => prev.map(req => {
+        if (req.user.id === userId) {
+          return { ...req, user: { ...req.user, verification_status: 'rejected' } }
+        }
+        return req
+      }))
       // toast.success('KYC Rejected')
     } catch (error) {
       console.error('Failed to reject KYC', error)
       // toast.error('Failed to reject')
     }
+  }
+
+  const exportKycToCsv = () => {
+    // Basic CSV export
+    const headers = ['Name', 'Email', 'Phone', 'Role', 'Status', 'ID Number', 'Consent Log']
+    const csvContent = "data:text/csv;charset=utf-8," 
+      + headers.join(',') + '\n'
+      + allKyc.map(req => {
+          const u = req.user
+          const consentDoc = req.documents?.find(d => d.document_type === 'legal_document')
+          let consentUrl = consentDoc ? consentDoc.file_url : 'N/A'
+          if (consentUrl !== 'N/A' && !consentUrl.startsWith('http')) {
+             consentUrl = `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${consentUrl}`
+          }
+          return `"${u.name}","${u.email}","${u.phone}","${u.role}","${u.verification_status}","${u.id_number || ''}","${consentUrl}"`
+      }).join('\n')
+      
+    const encodedUri = encodeURI(csvContent)
+    const link = document.createElement("a")
+    link.setAttribute("href", encodedUri)
+    link.setAttribute("download", "victor_springs_kyc_logs.csv")
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 
   return (
@@ -495,15 +531,19 @@ const AdminDashboard = () => {
 
           <TabsContent value="kyc">
             <Card>
-              <CardHeader>
-                <CardTitle>Pending KYC Identity Verifications</CardTitle>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>KYC Verifications & Logs</CardTitle>
+                <Button variant="outline" onClick={exportKycToCsv}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Export to CSV
+                </Button>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {pendingKyc.length === 0 ? (
-                    <p className="text-gray-500 text-center py-4">No pending KYC verifications.</p>
+                  {allKyc.length === 0 ? (
+                    <p className="text-gray-500 text-center py-4">No KYC records found.</p>
                   ) : (
-                    pendingKyc.map(({ user, documents }) => (
+                    allKyc.map(({ user, documents }) => (
                       <div key={user.id} className="p-4 border rounded-lg bg-white">
                         <div className="flex items-start justify-between">
                           <div>
@@ -514,35 +554,47 @@ const AdminDashboard = () => {
                               Submitted {documents && documents.length > 0 ? formatDate(documents[0].created_at) : ''}
                             </p>
                           </div>
-                          <Badge className="bg-yellow-100 text-yellow-800">
-                            Pending Review
+                          <Badge className={
+                            user.verification_status === 'verified' ? 'bg-green-100 text-green-800' :
+                            user.verification_status === 'rejected' ? 'bg-red-100 text-red-800' :
+                            'bg-yellow-100 text-yellow-800'
+                          }>
+                            {user.verification_status === 'verified' ? 'Verified' : 
+                             user.verification_status === 'rejected' ? 'Rejected' : 'Pending Review'}
                           </Badge>
                         </div>
                         
                         <div className="mt-4 flex flex-wrap gap-2">
-                           {documents && documents.map((doc, idx) => (
+                           {documents && documents.map((doc, idx) => {
+                             let fileUrl = doc.file_url;
+                             if (fileUrl && !fileUrl.startsWith('http')) {
+                               fileUrl = `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${fileUrl}`;
+                             }
+                             return (
                              <Button 
                                key={doc.id}
                                variant="outline"
                                size="sm"
-                               onClick={() => window.open(`${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${doc.file_url}`, '_blank')}
+                               onClick={() => window.open(fileUrl, '_blank')}
                              >
                                <Eye className="h-4 w-4 mr-2" />
                                View {doc.name || `Document ${idx + 1}`}
                              </Button>
-                           ))}
+                           )})}
                         </div>
 
-                        <div className="flex gap-2 mt-4">
-                          <Button onClick={() => handleApproveKyc(user.id)} className="flex-1 bg-victor-green hover:bg-victor-green-dark">
-                            <Check className="h-4 w-4 mr-2" />
-                            Approve
-                          </Button>
-                          <Button onClick={() => handleRejectKyc(user.id)} variant="outline" className="text-red-600 hover:bg-red-50 flex-1">
-                            <X className="h-4 w-4 mr-2" />
-                            Reject
-                          </Button>
-                        </div>
+                        {user.verification_status === 'pending' && (
+                          <div className="flex gap-2 mt-4">
+                            <Button onClick={() => handleApproveKyc(user.id)} className="flex-1 bg-victor-green hover:bg-victor-green-dark">
+                              <Check className="h-4 w-4 mr-2" />
+                              Approve
+                            </Button>
+                            <Button onClick={() => handleRejectKyc(user.id)} variant="outline" className="text-red-600 hover:bg-red-50 flex-1">
+                              <X className="h-4 w-4 mr-2" />
+                              Reject
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     ))
                   )}
