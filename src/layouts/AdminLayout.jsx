@@ -15,7 +15,8 @@ import {
   ShieldCheck,
   BarChart3,
   Settings,
-  ClipboardList
+  ClipboardList,
+  User
 } from 'lucide-react'
 
 const AdminLayout = () => {
@@ -42,6 +43,7 @@ const AdminLayout = () => {
     { icon: ClipboardList, label: 'Tenants Directory', path: '/admin/tenants' },
     { icon: ShieldCheck, label: 'KYC', path: '/admin/kyc' },
     { icon: BarChart3, label: 'Reports', path: '/admin/reports' },
+    { icon: User, label: 'My Profile', path: '/admin/profile' },
     { icon: Settings, label: 'Settings', path: '/admin/settings' },
   ]
 

@@ -49,10 +49,7 @@ const AdminOverview = () => {
     totalUsers: recentUsers.length,
     totalProperties: allProperties.length,
     pendingApprovals: pendingProperties.length,
-    pendingKyc: pendingKycCount,
-    monthlyRevenue: 0,
-    userGrowth: 12.5,
-    propertyGrowth: 8.3,
+    pendingKyc: pendingKycCount
   }
 
   const getStatusBadge = (status) => {
@@ -91,10 +88,6 @@ const AdminOverview = () => {
                 <Users className="h-6 w-6 text-blue-600" />
               </div>
             </div>
-            <div className="flex items-center gap-1 mt-2 text-sm text-green-600">
-              <TrendingUp className="h-4 w-4" />
-              <span>+{stats.userGrowth}% this month</span>
-            </div>
           </CardContent>
         </Card>
 
@@ -108,10 +101,6 @@ const AdminOverview = () => {
               <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center">
                 <Building2 className="h-6 w-6 text-green-600" />
               </div>
-            </div>
-            <div className="flex items-center gap-1 mt-2 text-sm text-green-600">
-              <TrendingUp className="h-4 w-4" />
-              <span>+{stats.propertyGrowth}% this month</span>
             </div>
           </CardContent>
         </Card>

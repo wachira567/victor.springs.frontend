@@ -16,6 +16,7 @@ import AdminReports from './pages/admin/AdminReports'
 import AdminSettings from './pages/admin/AdminSettings'
 import AdminApplications from './pages/admin/AdminApplications'
 import AdminTenants from './pages/admin/AdminTenants'
+import AdminProfile from './pages/admin/AdminProfile'
 import LandlordDashboard from './pages/LandlordDashboard'
 import SubmitProperty from './pages/SubmitProperty'
 import About from './pages/About'
@@ -77,6 +78,7 @@ function App() {
             <Route path="kyc" element={<AdminKyc />} />
             <Route path="reports" element={<AdminReports />} />
             <Route path="settings" element={<AdminSettings />} />
+            <Route path="profile" element={<AdminProfile />} />
           </Route>
 
           {/* Public Routes with Navbar & Footer */}
