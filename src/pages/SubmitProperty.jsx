@@ -34,7 +34,11 @@ import {
   Info,
   Plus,
   Trash2,
-  Home
+  Home,
+  Search,
+  Crosshair,
+  Map as MapIcon,
+  Navigation
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Map, { Marker, NavigationControl } from 'react-map-gl/mapbox'
@@ -67,6 +71,10 @@ const SubmitProperty = () => {
     latitude: -1.2921,
     zoom: 12
   })
+
+  const [locationMethod, setLocationMethod] = useState('search')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isSearching, setIsSearching] = useState(false)
 
   // Redirect if not landlord
   if (!hasRole(['landlord', 'super_admin'])) {
@@ -148,6 +156,58 @@ const SubmitProperty = () => {
       longitude: evt.lngLat.lng,
       latitude: evt.lngLat.lat
     }))
+  }
+
+  const handleSearchLocation = async () => {
+    if (!searchQuery) return
+    setIsSearching(true)
+    try {
+      const resp = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchQuery)}.json?access_token=${mapboxToken}&country=KE`)
+      const data = await resp.json()
+      if (data.features && data.features.length > 0) {
+        const [lng, lat] = data.features[0].center
+        setFormData(prev => ({ ...prev, longitude: lng, latitude: lat }))
+        setViewState({ longitude: lng, latitude: lat, zoom: 14 })
+        toast.success('Location found!')
+      } else {
+        toast.error('Location not found in Kenya.')
+      }
+    } catch (error) {
+      toast.error('Error searching location.')
+    } finally {
+      setIsSearching(false)
+    }
+  }
+
+  const handleApplyCoordinates = () => {
+    const lat = parseFloat(formData.latitude)
+    const lng = parseFloat(formData.longitude)
+    if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      toast.error('Invalid coordinates entered. They do not exist.')
+      return
+    }
+    setViewState({ longitude: lng, latitude: lat, zoom: 14 })
+    toast.success('Coordinates applied!')
+  }
+
+  const handleGetCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error('Geolocation is not supported by your browser')
+      return
+    }
+    toast.info('Detecting location...')
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude
+        const lng = position.coords.longitude
+        setFormData(prev => ({ ...prev, latitude: lat, longitude: lng }))
+        setViewState({ longitude: lng, latitude: lat, zoom: 15 })
+        toast.success('Current location detected!')
+      },
+      () => {
+        toast.error('Unable to retrieve your location. Please check your permissions.')
+      }
+    )
   }
 
   const handleImageUpload = (e) => {
@@ -269,6 +329,13 @@ const SubmitProperty = () => {
                       <SelectItem value="apartment">Apartment Building</SelectItem>
                       <SelectItem value="house">Single Family House</SelectItem>
                       <SelectItem value="condo">Condominium</SelectItem>
+                      <SelectItem value="townhouse">Townhouse</SelectItem>
+                      <SelectItem value="villa">Villa</SelectItem>
+                      <SelectItem value="commercial">Commercial Plaza</SelectItem>
+                      <SelectItem value="office">Office Block</SelectItem>
+                      <SelectItem value="warehouse">Warehouse</SelectItem>
+                      <SelectItem value="hostel">Hostel / Student Housing</SelectItem>
+                      <SelectItem value="gated">Gated Community</SelectItem>
                       <SelectItem value="mixed">Mixed Types</SelectItem>
                     </SelectContent>
                   </Select>
@@ -329,10 +396,92 @@ const SubmitProperty = () => {
                   </div>
                 </div>
 
-                <div>
-                  <Label>Drop a Pin on the Map *</Label>
-                  <p className="text-xs text-gray-500 mb-2">Click on the map to place the marker exactly where your property is.</p>
-                  <div className="h-[400px] w-full rounded-lg overflow-hidden border">
+                <div className="space-y-4 pt-2 border-t mt-4">
+                  <Label>How would you like to pinpoint the map location?</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                    <Button 
+                      type="button" 
+                      variant={locationMethod === 'search' ? 'default' : 'outline'}
+                      className={locationMethod === 'search' ? 'bg-victor-green hover:bg-victor-green-dark' : ''}
+                      onClick={() => setLocationMethod('search')}
+                    >
+                      <Search className="h-4 w-4 mr-2 hidden sm:block delay-150" /> Search Place
+                    </Button>
+                    <Button 
+                      type="button" 
+                      variant={locationMethod === 'coordinates' ? 'default' : 'outline'}
+                      className={locationMethod === 'coordinates' ? 'bg-victor-green hover:bg-victor-green-dark' : ''}
+                      onClick={() => setLocationMethod('coordinates')}
+                    >
+                      <MapIcon className="h-4 w-4 mr-2 hidden sm:block delay-150" /> Coordinates
+                    </Button>
+                    <Button 
+                      type="button" 
+                      variant={locationMethod === 'currentLocation' ? 'default' : 'outline'}
+                      className={locationMethod === 'currentLocation' ? 'bg-victor-green hover:bg-victor-green-dark' : ''}
+                      onClick={() => setLocationMethod('currentLocation')}
+                    >
+                      <Crosshair className="h-4 w-4 mr-2 hidden sm:block delay-150" /> Detect Current
+                    </Button>
+                  </div>
+
+                  {locationMethod === 'search' && (
+                    <div className="flex gap-2">
+                      <Input 
+                        placeholder="Search for a building, street, or area in Kenya..." 
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            handleSearchLocation()
+                          }
+                        }}
+                      />
+                      <Button type="button" onClick={handleSearchLocation} disabled={isSearching} className="bg-victor-green hover:bg-victor-green-dark shrink-0">
+                        {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Search'}
+                      </Button>
+                    </div>
+                  )}
+
+                  {locationMethod === 'coordinates' && (
+                    <div className="flex gap-2 items-end">
+                      <div className="flex-1">
+                        <Label className="text-xs text-gray-500 mb-1 block">Latitude</Label>
+                        <Input 
+                          type="number" 
+                          step="any"
+                          value={formData.latitude}
+                          onChange={(e) => setFormData({...formData, latitude: parseFloat(e.target.value)})}
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <Label className="text-xs text-gray-500 mb-1 block">Longitude</Label>
+                        <Input 
+                          type="number" 
+                          step="any"
+                          value={formData.longitude}
+                          onChange={(e) => setFormData({...formData, longitude: parseFloat(e.target.value)})}
+                        />
+                      </div>
+                      <Button type="button" onClick={handleApplyCoordinates} variant="outline" className="shrink-0">
+                        Locate Pin
+                      </Button>
+                    </div>
+                  )}
+
+                  {locationMethod === 'currentLocation' && (
+                    <div className="bg-blue-50 p-4 rounded-lg flex items-center justify-between border border-blue-100 mt-2">
+                      <span className="text-sm text-blue-800">Use your device's GPS to find your exact location.</span>
+                      <Button type="button" onClick={handleGetCurrentLocation} className="shrink-0 ml-4">
+                        <Navigation className="h-4 w-4 mr-2" /> Detect Now
+                      </Button>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-gray-500 mt-2 mb-2">You can also manually click anywhere on the map to drop the property pin.</p>
+                  
+                  <div className="h-[400px] w-full rounded-lg overflow-hidden border mt-2">
                     <Map
                       {...viewState}
                       onMove={evt => setViewState(evt.viewState)}
