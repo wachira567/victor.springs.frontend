@@ -146,13 +146,13 @@ const AdminDashboard = () => {
     return styles[status] || 'bg-gray-100 text-gray-800'
   }
 
-  const handleApproveKyc = async (docId) => {
+  const handleApproveKyc = async (userId) => {
     try {
       const token = localStorage.getItem('victorsprings_token')
-      await axios.post(`${API_URL}/users/kyc/${docId}/approve`, {}, {
+      await axios.post(`${API_URL}/users/kyc/${userId}/approve`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      setPendingKyc(prev => prev.filter(req => req.document.id !== docId))
+      setPendingKyc(prev => prev.filter(req => req.user.id !== userId))
       // toast.success('KYC Approved')
     } catch (error) {
       console.error('Failed to approve KYC', error)
@@ -160,15 +160,15 @@ const AdminDashboard = () => {
     }
   }
 
-  const handleRejectKyc = async (docId) => {
+  const handleRejectKyc = async (userId) => {
     const reason = prompt("Reason for rejection:")
     if (!reason) return
     try {
       const token = localStorage.getItem('victorsprings_token')
-      await axios.post(`${API_URL}/users/kyc/${docId}/reject`, { reason }, {
+      await axios.post(`${API_URL}/users/kyc/${userId}/reject`, { reason }, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      setPendingKyc(prev => prev.filter(req => req.document.id !== docId))
+      setPendingKyc(prev => prev.filter(req => req.user.id !== userId))
       // toast.success('KYC Rejected')
     } catch (error) {
       console.error('Failed to reject KYC', error)
@@ -503,35 +503,42 @@ const AdminDashboard = () => {
                   {pendingKyc.length === 0 ? (
                     <p className="text-gray-500 text-center py-4">No pending KYC verifications.</p>
                   ) : (
-                    pendingKyc.map(({ user, document }) => (
-                      <div key={document.id} className="p-4 border rounded-lg bg-white">
+                    pendingKyc.map(({ user, documents }) => (
+                      <div key={user.id} className="p-4 border rounded-lg bg-white">
                         <div className="flex items-start justify-between">
                           <div>
                             <h4 className="font-semibold">{user.name} <span className="text-gray-400 text-sm font-normal">({user.email})</span></h4>
                             <p className="text-sm text-gray-600">ID Number: {user.id_number || 'N/A'}</p>
                             <p className="text-sm text-gray-600">Phone: {user.phone}</p>
                             <p className="text-xs text-gray-400 mt-1">
-                              Submitted {formatDate(document.created_at)}
+                              Submitted {documents && documents.length > 0 ? formatDate(documents[0].created_at) : ''}
                             </p>
                           </div>
                           <Badge className="bg-yellow-100 text-yellow-800">
                             Pending Review
                           </Badge>
                         </div>
+                        
+                        <div className="mt-4 flex flex-wrap gap-2">
+                           {documents && documents.map((doc, idx) => (
+                             <Button 
+                               key={doc.id}
+                               variant="outline"
+                               size="sm"
+                               onClick={() => window.open(`${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${doc.file_url}`, '_blank')}
+                             >
+                               <Eye className="h-4 w-4 mr-2" />
+                               View {doc.name || `Document ${idx + 1}`}
+                             </Button>
+                           ))}
+                        </div>
+
                         <div className="flex gap-2 mt-4">
-                          <Button 
-                            variant="outline"
-                            className="flex-1"
-                            onClick={() => window.open(`${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}${document.file_url}`, '_blank')}
-                          >
-                            <Eye className="h-4 w-4 mr-2" />
-                            View ID Document
-                          </Button>
-                          <Button onClick={() => handleApproveKyc(document.id)} className="flex-1 bg-victor-green hover:bg-victor-green-dark">
+                          <Button onClick={() => handleApproveKyc(user.id)} className="flex-1 bg-victor-green hover:bg-victor-green-dark">
                             <Check className="h-4 w-4 mr-2" />
                             Approve
                           </Button>
-                          <Button onClick={() => handleRejectKyc(document.id)} variant="outline" className="text-red-600 hover:bg-red-50 flex-1">
+                          <Button onClick={() => handleRejectKyc(user.id)} variant="outline" className="text-red-600 hover:bg-red-50 flex-1">
                             <X className="h-4 w-4 mr-2" />
                             Reject
                           </Button>

@@ -16,7 +16,8 @@ const KYCVerificationBox = ({ user, onVerificationSubmit }) => {
     lastName: '',
     idNumber: '',
     phone: user?.phone || '',
-    idDocument: null,
+    idDocumentFront: null,
+    idDocumentBack: null,
     consentDocument: null,
     otp: '',
     otpToken: '',
@@ -74,8 +75,12 @@ const KYCVerificationBox = ({ user, onVerificationSubmit }) => {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  const handleFileChange = (e) => {
-    setFormData(prev => ({ ...prev, idDocument: e.target.files[0] }))
+  const handleFileChangeFront = (e) => {
+    setFormData(prev => ({ ...prev, idDocumentFront: e.target.files[0] }))
+  }
+
+  const handleFileChangeBack = (e) => {
+    setFormData(prev => ({ ...prev, idDocumentBack: e.target.files[0] }))
   }
 
   const handleConsentFileChange = (e) => {
@@ -96,8 +101,8 @@ const KYCVerificationBox = ({ user, onVerificationSubmit }) => {
         toast.error('Please fill in all required personal details.')
         return
       }
-      if (!formData.idDocument) {
-        toast.error('Please upload a scan of your National ID or Passport.')
+      if (!formData.idDocumentFront || !formData.idDocumentBack) {
+        toast.error('Please upload both the front and back of your National ID or Passport.')
         return
       }
       
@@ -135,8 +140,11 @@ const KYCVerificationBox = ({ user, onVerificationSubmit }) => {
       data.append('signature_method', formData.signatureMethod)
       data.append('otp', formData.otp)
       data.append('otp_token', formData.otpToken)
-      if (formData.idDocument) {
-        data.append('id_document', formData.idDocument)
+      if (formData.idDocumentFront) {
+        data.append('id_document_front', formData.idDocumentFront)
+      }
+      if (formData.idDocumentBack) {
+        data.append('id_document_back', formData.idDocumentBack)
       }
       if (formData.consentDocument && formData.signatureMethod === 'manual') {
         data.append('consent_document', formData.consentDocument)
@@ -204,20 +212,39 @@ const KYCVerificationBox = ({ user, onVerificationSubmit }) => {
               </div>
             </div>
 
-            <div>
-              <Label>Upload National ID / Passport Copy <span className="text-red-500">*</span></Label>
-              <div className="mt-2 border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer relative">
-                <Input 
-                  type="file" 
-                  accept="image/*,.pdf" 
-                  onChange={handleFileChange}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                />
-                <Upload className="h-8 w-8 text-gray-400 mb-2" />
-                <p className="text-sm font-medium text-gray-900">
-                  {formData.idDocument ? formData.idDocument.name : 'Click to upload or drag and drop'}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">PNG, JPG, or PDF (Max 5MB)</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>Upload ID / Passport (Front) <span className="text-red-500">*</span></Label>
+                <div className="mt-2 border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer relative">
+                  <Input 
+                    type="file" 
+                    accept="image/*,.pdf" 
+                    onChange={handleFileChangeFront}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                  <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                  <p className="text-sm font-medium text-gray-900 text-center">
+                    {formData.idDocumentFront ? formData.idDocumentFront.name : 'Upload Front Side'}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">PNG, JPG, or PDF (Max 5MB)</p>
+                </div>
+              </div>
+
+              <div>
+                <Label>Upload ID / Passport (Back) <span className="text-red-500">*</span></Label>
+                <div className="mt-2 border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer relative">
+                  <Input 
+                    type="file" 
+                    accept="image/*,.pdf" 
+                    onChange={handleFileChangeBack}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                  <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                  <p className="text-sm font-medium text-gray-900 text-center">
+                    {formData.idDocumentBack ? formData.idDocumentBack.name : 'Upload Back Side'}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">PNG, JPG, or PDF (Max 5MB)</p>
+                </div>
               </div>
             </div>
 
