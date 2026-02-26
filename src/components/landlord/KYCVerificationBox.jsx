@@ -17,6 +17,8 @@ const KYCVerificationBox = ({ user, onVerificationSubmit }) => {
     idNumber: '',
     phone: user?.phone || '',
     idDocument: null,
+    otp: '',
+    otpToken: '',
     signatureMethod: 'electronic' // 'electronic' or 'manual'
   })
 
@@ -75,7 +77,7 @@ const KYCVerificationBox = ({ user, onVerificationSubmit }) => {
     setFormData(prev => ({ ...prev, idDocument: e.target.files[0] }))
   }
 
-  const handleNextStep = () => {
+  const handleSendOtp = async () => {
     if (step === 1) {
       if (!formData.firstName || !formData.lastName || !formData.idNumber || !formData.phone) {
         toast.error('Please fill in all required personal details.')
@@ -85,7 +87,26 @@ const KYCVerificationBox = ({ user, onVerificationSubmit }) => {
         toast.error('Please upload a scan of your National ID or Passport.')
         return
       }
-      setStep(2)
+      
+      setIsSubmitting(true)
+      try {
+        const token = localStorage.getItem('victorsprings_token')
+        const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
+        
+        const res = await axios.post(`${API_URL}/auth/kyc/send-otp`, {
+          phone: formData.phone
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        
+        setFormData(prev => ({ ...prev, otpToken: res.data.otp_token }))
+        toast.success(res.data.message || 'Verification code sent to your phone!')
+        setStep(1.5)
+      } catch (error) {
+        toast.error(error.response?.data?.message || 'Failed to send verification code. Please check your phone number.')
+      } finally {
+        setIsSubmitting(false)
+      }
     }
   }
 
@@ -99,11 +120,13 @@ const KYCVerificationBox = ({ user, onVerificationSubmit }) => {
       data.append('id_number', formData.idNumber)
       data.append('phone', formData.phone)
       data.append('signature_method', formData.signatureMethod)
+      data.append('otp', formData.otp)
+      data.append('otp_token', formData.otpToken)
       if (formData.idDocument) {
         data.append('id_document', formData.idDocument)
       }
 
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('victorsprings_token')
       const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
       
       await axios.post(`${API_URL}/auth/kyc/submit`, data, {
@@ -183,8 +206,50 @@ const KYCVerificationBox = ({ user, onVerificationSubmit }) => {
             </div>
 
             <div className="flex justify-end pt-4 border-t">
-              <Button onClick={handleNextStep} className="bg-victor-green hover:bg-victor-green-dark">
-                Continue to Legal Agreement
+              <Button onClick={handleSendOtp} disabled={isSubmitting} className="bg-victor-green hover:bg-victor-green-dark">
+                {isSubmitting ? 'Sending Code...' : 'Send Verification Code'}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {step === 1.5 && (
+          <div className="space-y-6">
+            <div className="bg-gray-50 p-6 rounded-lg border text-center">
+              <ShieldCheck className="h-12 w-12 text-victor-green mx-auto mb-4" />
+              <h4 className="font-semibold text-gray-900 text-lg">Verify Your Phone Number</h4>
+              <p className="text-gray-600 mt-2 max-w-sm mx-auto">
+                We've sent a 6-digit verification code to <span className="font-medium text-gray-900">{formData.phone}</span>. Please enter it below.
+              </p>
+              
+              <div className="mt-6 max-w-xs mx-auto">
+                <Label className="text-left block mb-2">Verification Code</Label>
+                <Input 
+                  name="otp" 
+                  value={formData.otp} 
+                  onChange={handleInputChange} 
+                  placeholder="123456" 
+                  className="text-center text-2xl tracking-widest py-4"
+                  maxLength={6}
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-between pt-4 border-t mt-8">
+              <Button variant="outline" onClick={() => setStep(1)} disabled={isSubmitting}>
+                Back
+              </Button>
+              <Button 
+                onClick={() => {
+                  if (formData.otp.length < 5) {
+                    toast.error('Please enter a valid OTP code.')
+                    return
+                  }
+                  setStep(2)
+                }} 
+                className="bg-victor-green hover:bg-victor-green-dark"
+              >
+                Verify & Continue
               </Button>
             </div>
           </div>
@@ -231,8 +296,8 @@ const KYCVerificationBox = ({ user, onVerificationSubmit }) => {
             </div>
 
             <div className="flex justify-between pt-4 border-t mt-8">
-              <Button variant="outline" onClick={() => setStep(1)} disabled={isSubmitting}>
-                Back Space
+              <Button variant="outline" onClick={() => setStep(1.5)} disabled={isSubmitting}>
+                Back
               </Button>
               <Button onClick={handleSubmit} className="bg-victor-green hover:bg-victor-green-dark" disabled={isSubmitting}>
                 {isSubmitting ? 'Submitting...' : (formData.signatureMethod === 'electronic' ? 'Proceed to E-Sign' : 'Submit for Review')}
