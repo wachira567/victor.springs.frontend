@@ -77,10 +77,7 @@ const LandlordDashboard = () => {
     inquiries: myProperties.reduce((acc, p) => acc + (p.inquiries_count || 0), 0),
     occupancyRate: myProperties.length > 0 
       ? Math.round((myProperties.filter(p => p.status === 'rented').length / myProperties.length) * 100)
-      : 0,
-    monthlyIncome: myProperties
-      .filter(p => p.status === 'rented')
-      .reduce((acc, p) => acc + (p.price || 0), 0),
+      : 0
   }
 
   const getStatusBadge = (status) => {
@@ -167,23 +164,6 @@ const LandlordDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Monthly Income</p>
-                  <p className="text-2xl font-bold">{formatPrice(stats.monthlyIncome)}</p>
-                </div>
-                <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center">
-                  <TrendingUp className="h-6 w-6 text-purple-600" />
-                </div>
-              </div>
-              <div className="flex items-center gap-1 mt-2 text-sm text-green-600">
-                <TrendingUp className="h-4 w-4" />
-                <span>+8% from last month</span>
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Occupancy Rate */}
@@ -220,7 +200,6 @@ const LandlordDashboard = () => {
               )}
             </TabsTrigger>
             <TabsTrigger value="reports">Reports & Analytics</TabsTrigger>
-            <TabsTrigger value="tenants">Tenant Records</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -453,76 +432,6 @@ const LandlordDashboard = () => {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
-
-          {/* Tenant Records Tab */}
-          <TabsContent value="tenants" className="space-y-6">
-             <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <div>
-                    <CardTitle>Active Tenant Leases</CardTitle>
-                    <p className="text-sm text-gray-500 mt-1">Manage your current occupants and lease agreements</p>
-                  </div>
-                  <Button variant="outline" size="sm">
-                    <ArrowUpRight className="h-4 w-4 mr-2" />
-                    Export CSV
-                  </Button>
-                </CardHeader>
-                <CardContent>
-                  <div className="overflow-x-auto rounded-lg border border-gray-100">
-                    <table className="w-full text-sm text-left">
-                      <thead className="bg-gray-50/80 text-gray-600 uppercase text-xs font-semibold">
-                        <tr>
-                          <th className="px-5 py-4">Tenant Name</th>
-                          <th className="px-5 py-4">Property</th>
-                          <th className="px-5 py-4">Rent Status</th>
-                          <th className="px-5 py-4">Lease End</th>
-                          <th className="px-5 py-4 text-right">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100">
-                        {myProperties.filter(p => p.status === 'rented').length > 0 ? (
-                          myProperties.filter(p => p.status === 'rented').map((property) => (
-                            <tr key={property.id} className="hover:bg-gray-50/50 transition-colors">
-                              <td className="px-5 py-4 font-medium text-gray-900 flex items-center gap-3">
-                                 <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
-                                    {property.tenant_id ? 'T' : 'U'}
-                                 </div>
-                                 {property.tenant_id ? `Tenant #${property.tenant_id}` : 'Unknown Tenant'}
-                              </td>
-                              <td className="px-5 py-4 text-gray-600 font-medium">{property.title}</td>
-                              <td className="px-5 py-4">
-                                <Badge variant="outline" className="border-green-200 text-green-700 bg-green-50">
-                                  Rented
-                                </Badge>
-                              </td>
-                              <td className="px-5 py-4 text-gray-500">
-                                {property.lease_end ? new Date(property.lease_end).toLocaleDateString() : 'N/A'}
-                              </td>
-                              <td className="px-5 py-4 text-right">
-                                 <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  onClick={() => navigate(`/properties/${property.id}`)}
-                                  className="text-victor-green hover:text-victor-green hover:bg-victor-green/10"
-                                >
-                                  View Property
-                                </Button>
-                              </td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan="5" className="px-5 py-8 text-center text-gray-500">
-                              No active leases found. When a property is marked as rented, the lease details will appear here.
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </CardContent>
-              </Card>
           </TabsContent>
         </Tabs>
       </div>
