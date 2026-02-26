@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ShieldAlert, ShieldCheck, Upload, FileText, CheckCircle2 } from 'lucide-react'
+import { ShieldAlert, ShieldCheck, Upload, FileText, CheckCircle2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import axios from 'axios'
 
@@ -212,36 +212,76 @@ const KYCVerificationBox = ({ user, onVerificationSubmit }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label>Upload ID / Passport (Front) <span className="text-red-500">*</span></Label>
-                <div className="mt-2 border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer relative">
-                  <Input 
-                    type="file" 
-                    accept="image/*,.pdf" 
-                    onChange={handleFileChangeFront}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  />
-                  <Upload className="h-8 w-8 text-gray-400 mb-2" />
-                  <p className="text-sm font-medium text-gray-900 text-center">
-                    {formData.idDocumentFront ? formData.idDocumentFront.name : 'Upload Front Side'}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">PNG, JPG, or PDF (Max 5MB)</p>
-                </div>
+                {formData.idDocumentFront ? (
+                  <div className="mt-2 relative rounded-xl overflow-hidden border h-48 group">
+                    {formData.idDocumentFront.type?.startsWith('image/') ? (
+                      <img src={URL.createObjectURL(formData.idDocumentFront)} alt="Front ID Preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-gray-100 flex flex-col items-center justify-center p-4">
+                        <FileText className="h-12 w-12 text-gray-400 mb-2 shrink-0" />
+                        <span className="text-sm font-medium text-center break-words line-clamp-2">{formData.idDocumentFront.name}</span>
+                      </div>
+                    )}
+                    <button 
+                      type="button"
+                      onClick={() => setFormData(prev => ({...prev, idDocumentFront: null}))}
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 transition-colors shadow-sm opacity-90 hover:opacity-100"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mt-2 border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer relative h-48">
+                    <Input 
+                      type="file" 
+                      accept="image/*,.pdf" 
+                      onChange={handleFileChangeFront}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                    <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                    <p className="text-sm font-medium text-gray-900 text-center">
+                      Upload Front Side
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">PNG, JPG, or PDF (Max 5MB)</p>
+                  </div>
+                )}
               </div>
 
               <div>
                 <Label>Upload ID / Passport (Back) <span className="text-red-500">*</span></Label>
-                <div className="mt-2 border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer relative">
-                  <Input 
-                    type="file" 
-                    accept="image/*,.pdf" 
-                    onChange={handleFileChangeBack}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  />
-                  <Upload className="h-8 w-8 text-gray-400 mb-2" />
-                  <p className="text-sm font-medium text-gray-900 text-center">
-                    {formData.idDocumentBack ? formData.idDocumentBack.name : 'Upload Back Side'}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">PNG, JPG, or PDF (Max 5MB)</p>
-                </div>
+                {formData.idDocumentBack ? (
+                  <div className="mt-2 relative rounded-xl overflow-hidden border h-48 group">
+                    {formData.idDocumentBack.type?.startsWith('image/') ? (
+                      <img src={URL.createObjectURL(formData.idDocumentBack)} alt="Back ID Preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-gray-100 flex flex-col items-center justify-center p-4">
+                        <FileText className="h-12 w-12 text-gray-400 mb-2 shrink-0" />
+                        <span className="text-sm font-medium text-center break-words line-clamp-2">{formData.idDocumentBack.name}</span>
+                      </div>
+                    )}
+                    <button 
+                      type="button"
+                      onClick={() => setFormData(prev => ({...prev, idDocumentBack: null}))}
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 transition-colors shadow-sm opacity-90 hover:opacity-100"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mt-2 border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer relative h-48">
+                    <Input 
+                      type="file" 
+                      accept="image/*,.pdf" 
+                      onChange={handleFileChangeBack}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                    <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                    <p className="text-sm font-medium text-gray-900 text-center">
+                      Upload Back Side
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">PNG, JPG, or PDF (Max 5MB)</p>
+                  </div>
+                )}
               </div>
             </div>
 
