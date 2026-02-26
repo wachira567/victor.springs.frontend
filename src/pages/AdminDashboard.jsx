@@ -105,7 +105,7 @@ const AdminDashboard = () => {
         
         const [usersRes, propertiesRes, pendingRes] = await Promise.all([
           axios.get(`${API_URL}/users/`, { headers }),
-          axios.get(`${API_URL}/properties?per_page=1000`, { headers }),
+          axios.get(`${API_URL}/properties/?per_page=1000`, { headers }),
           axios.get(`${API_URL}/properties/pending`, { headers })
         ])
         

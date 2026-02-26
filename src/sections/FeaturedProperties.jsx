@@ -27,7 +27,7 @@ const FeaturedProperties = () => {
       try {
         const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
         // Fetch fetching max properties to display natively instead of mock elements
-        const response = await axios.get(`${API_URL}/properties?per_page=6`)
+        const response = await axios.get(`${API_URL}/properties/?per_page=6`)
         setProperties(response.data.properties || [])
       } catch (error) {
         console.error('Failed to fetch featured properties:', error)

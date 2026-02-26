@@ -62,7 +62,7 @@ const Properties = () => {
   useEffect(() => {
     const fetchProperties = async () => {
       try {
-        const response = await axios.get(`${API_URL}/properties?per_page=100`)
+        const response = await axios.get(`${API_URL}/properties/?per_page=100`)
         setAllProperties(response.data.properties)
         setFilteredProperties(response.data.properties)
       } catch (error) {
