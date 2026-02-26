@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
@@ -7,14 +8,14 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { 
-  MapPin, 
-  Bed, 
-  Bath, 
-  Maximize, 
-  Calendar, 
-  User, 
-  Phone, 
+import {
+  MapPin,
+  Bed,
+  Bath,
+  Maximize,
+  Calendar,
+  User,
+  Phone,
   Mail,
   Heart,
   Share2,
@@ -26,40 +27,80 @@ import {
   Dumbbell,
   TreePine,
   Dog,
-  Info
+  Info,
+  FileText
 } from 'lucide-react'
-import { formatPrice } from '@/lib/utils'
 import Map, { Marker, NavigationControl } from 'react-map-gl/mapbox'
 import 'mapbox-gl/dist/mapbox-gl.css'
+import { formatPrice, formatDate } from '@/lib/utils'
+import { API_URL as GLOBAL_API_URL } from '@/lib/api'
+import TenantApplicationBox from '@/components/tenant/TenantApplicationBox'
 
 const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || ''
 
 const PropertyDetail = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { hasRole } = useAuth()
+  const { hasRole, currentUser } = useAuth()
   const [isFavorite, setIsFavorite] = useState(false)
   const [selectedImage, setSelectedImage] = useState(0)
+  const [showApplicationForm, setShowApplicationForm] = useState(false)
 
-  const isLandlordView = hasRole('landlord')
+  // Settings State
+  const [globalPhone, setGlobalPhone] = useState('')
 
   const [property, setProperty] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const fetchProperty = async () => {
+    const fetchPropertyAndSettings = async () => {
       try {
         const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
-        const response = await axios.get(`${API_URL}/properties/${id}`)
-        setProperty(response.data.property)
+        
+        const [propRes, settingsRes] = await Promise.all([
+          axios.get(`${API_URL}/properties/${id}`),
+          axios.get(`${API_URL}/settings/`)
+        ])
+        
+        setProperty(propRes.data.property)
+        if (settingsRes.data.settings?.contact_number) {
+           setGlobalPhone(settingsRes.data.settings.contact_number)
+        }
       } catch (error) {
-        console.error('Error fetching property:', error)
+        console.error('Error fetching data:', error)
       } finally {
         setIsLoading(false)
       }
     }
-    fetchProperty()
+    fetchPropertyAndSettings()
   }, [id])
+
+  const handleInteract = async (type) => {
+    try {
+      const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
+      await axios.post(`${API_URL}/properties/${id}/interact`, { type })
+    } catch (err) {
+      console.error('Failed to log interaction')
+    }
+  }
+
+  const handleLikeToggle = async () => {
+    if (!currentUser) {
+       alert("Please log in to like properties.")
+       return
+    }
+    try {
+      const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
+      const token = localStorage.getItem('victorsprings_token')
+      const headers = { Authorization: `Bearer ${token}` }
+      const { data } = await axios.post(`${API_URL}/properties/${id}/like`, {}, { headers })
+      
+      setIsFavorite(data.liked)
+      setProperty(prev => ({ ...prev, like_count: data.like_count }))
+    } catch (err) {
+       console.error("Failed to toggle like", err)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -111,7 +152,7 @@ const PropertyDetail = () => {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => setIsFavorite(!isFavorite)}
+                onClick={handleLikeToggle}
                 className={isFavorite ? 'text-red-500' : ''}
               >
                 <Heart className={`h-4 w-4 ${isFavorite ? 'fill-current' : ''}`} />
@@ -336,7 +377,10 @@ const PropertyDetail = () => {
                 </div>
                 
                 {property.latitude && property.longitude ? (
-                  <div className="h-[400px] w-full rounded-xl overflow-hidden border shadow-sm">
+                  <div 
+                    className="h-[400px] w-full rounded-xl overflow-hidden border shadow-sm"
+                    onClick={() => handleInteract('map')}
+                  >
                     <Map
                       initialViewState={{
                         longitude: parseFloat(property.longitude),
@@ -374,60 +418,66 @@ const PropertyDetail = () => {
                   {/* Contact Card */}
                   <Card>
                     <CardContent className="p-6">
-                      <h3 className="font-semibold text-lg mb-4">Contact Landlord</h3>
-                      <div className="flex items-center gap-4 mb-6">
-                        <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">
-                          <User className="h-8 w-8 text-gray-400" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-medium">{landlord.name || 'Verifying Landlord'}</h4>
-                            {landlord.name && (
-                              <Shield className="h-4 w-4 text-victor-green" />
-                            )}
-                          </div>
-                          <p className="text-sm text-gray-500">Member since 2024</p>
-                        </div>
-                      </div>
+                      <h3 className="font-semibold text-lg mb-4 text-gray-900">Interested in this property?</h3>
+                      <p className="text-gray-600 text-sm mb-6">
+                        Get in touch with us to book a viewing or to inquire about moving in. We're here to help!
+                      </p>
 
                       <div className="space-y-3">
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button className="w-full bg-victor-green hover:bg-victor-green-dark" disabled={!landlord.phone}>
-                              <Phone className="h-4 w-4 mr-2" />
-                              Show Phone Number
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Contact Information</DialogTitle>
-                            </DialogHeader>
-                            <div className="text-center py-6">
-                              <p className="text-lg font-semibold">{landlord.phone || 'N/A'}</p>
-                              <p className="text-sm text-gray-500 mt-2">Mention you found this on Victor Springs</p>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-
-                        <Button variant="outline" className="w-full">
-                          <Mail className="h-4 w-4 mr-2" />
-                          Send Message
+                        <Button 
+                          className="w-full bg-[#25D366] hover:bg-[#1ebd5a] text-white"
+                          onClick={() => {
+                             handleInteract('whatsapp')
+                             if (globalPhone) {
+                               window.open(`https://wa.me/${globalPhone.replace(/\\D/g, '')}?text=Hi, I am interested in ${property.title} (${window.location.href})`, '_blank')
+                             }
+                          }}
+                        >
+                          <MessageSquare className="h-4 w-4 mr-2" />
+                          Chat on WhatsApp
                         </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
 
-                  {/* Schedule Viewing Card */}
-                  <Card>
-                    <CardContent className="p-6">
-                      <h3 className="font-semibold text-lg mb-4">Schedule a Viewing</h3>
-                      <p className="text-gray-600 text-sm mb-4">
-                        Book a time to view this property in person. Our agents will show you around.
-                      </p>
-                      <Button variant="outline" className="w-full">
-                        <Calendar className="h-4 w-4 mr-2" />
-                        Book Viewing
-                      </Button>
+                        <Button 
+                          variant="outline" 
+                          className="w-full"
+                          onClick={() => {
+                             handleInteract('call')
+                             if (globalPhone) {
+                               window.open(`tel:${globalPhone}`, '_self')
+                             }
+                          }}
+                        >
+                          <Phone className="h-4 w-4 mr-2" />
+                          Call Us Now
+                        </Button>
+
+                        {!isLandlordView && currentUser && (
+                          <>
+                            <div className="relative py-2">
+                              <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t border-gray-200" />
+                              </div>
+                              <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-white px-2 text-gray-500">Or</span>
+                              </div>
+                            </div>
+                            <Button 
+                              className="w-full bg-victor-green hover:bg-victor-green-dark text-white"
+                              onClick={() => setShowApplicationForm(true)}
+                            >
+                              <FileText className="h-4 w-4 mr-2" />
+                              Apply for Tenancy
+                            </Button>
+                          </>
+                        )}
+                        {!currentUser && (
+                           <p className="text-xs text-gray-500 mt-2 text-center">Sign in to apply for this property directly.</p>
+                        )}
+                      </div>
+                      
+                      {!globalPhone && (
+                        <p className="text-xs text-red-500 mt-3 text-center">Contact numbers are temporarily unavailable.</p>
+                      )}
                     </CardContent>
                   </Card>
                 </>
@@ -449,6 +499,14 @@ const PropertyDetail = () => {
           </div>
         </div>
       </div>
+
+      {showApplicationForm && (
+        <TenantApplicationBox 
+          property={property} 
+          user={currentUser} 
+          onClose={() => setShowApplicationForm(false)} 
+        />
+      )}
     </div>
   )
 }

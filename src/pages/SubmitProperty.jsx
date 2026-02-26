@@ -58,6 +58,7 @@ const SubmitProperty = () => {
     description: '',
     propertyType: '',
     tenantAgreementFee: '',
+    tenantAgreementFile: null,
     city: '',
     address: '',
     locationDescription: '',
@@ -248,20 +249,35 @@ const SubmitProperty = () => {
     setIsSubmitting(true)
     
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('victorsprings_token') || localStorage.getItem('token')
       if (!token) {
         toast.error('You must be logged in to submit a property.')
         navigate('/login')
         return
       }
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/properties`, {
+      const submitData = new FormData()
+      submitData.append('title', formData.title)
+      submitData.append('description', formData.description)
+      submitData.append('propertyType', formData.propertyType)
+      submitData.append('tenant_agreement_fee', formData.tenantAgreementFee)
+      submitData.append('city', formData.city)
+      submitData.append('address', formData.address)
+      submitData.append('locationDescription', formData.locationDescription)
+      submitData.append('latitude', formData.latitude)
+      submitData.append('longitude', formData.longitude)
+      submitData.append('units', JSON.stringify(formData.units))
+      
+      if (formData.tenantAgreementFile) {
+        submitData.append('tenant_agreement_file', formData.tenantAgreementFile)
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/properties`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(formData)
+        body: submitData
       })
 
       const data = await response.json()
@@ -394,6 +410,25 @@ const SubmitProperty = () => {
                     onChange={(e) => setFormData({ ...formData, tenantAgreementFee: e.target.value })}
                   />
                   <p className="text-xs text-gray-500 mt-1">Leave blank if not applicable.</p>
+                </div>
+
+                <div>
+                  <Label htmlFor="tenantAgreementFile">Blank Tenant Agreement (PDF)</Label>
+                  <div className="mt-2 border border-dashed rounded bg-gray-50 p-3 text-center cursor-pointer relative overflow-hidden h-20 flex items-center justify-center">
+                    <Input 
+                      type="file" 
+                      id="tenantAgreementFile"
+                      onChange={(e) => setFormData(prev => ({ ...prev, tenantAgreementFile: e.target.files[0] }))} 
+                      className="absolute inset-0 opacity-0 cursor-pointer" 
+                      accept=".pdf" 
+                    />
+                    {formData.tenantAgreementFile ? (
+                      <span className="text-sm font-medium text-victor-green line-clamp-2">{formData.tenantAgreementFile.name}</span>
+                    ) : (
+                       <div className="text-gray-400"><Upload className="mx-auto h-5 w-5 mb-1"/> Upload Template PDF</div>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Tenants will download this, sign it, and re-upload when applying.</p>
                 </div>
 
                 <div>

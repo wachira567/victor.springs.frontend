@@ -38,11 +38,13 @@ const Navbar = () => {
 
   const isActive = (path) => location.pathname === path
 
-  const tenantLinks = [
-    { path: '/', label: 'Home', icon: Home },
+  const tenantLinks = isAuthenticated ? [
     { path: '/properties', label: 'Properties', icon: Building2 },
+  ] : [
+    { path: '/', label: 'Home', icon: Home },
     { path: '/about', label: 'About', icon: Info },
     { path: '/contact', label: 'Contact', icon: Phone },
+    { path: '/properties', label: 'Properties', icon: Building2 },
   ]
 
   const landlordLinks = [
