@@ -49,7 +49,6 @@ const LandlordDashboard = () => {
   }
 
   const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
-  const inquiries = []
   const [myProperties, setMyProperties] = useState([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -74,7 +73,6 @@ const LandlordDashboard = () => {
     totalProperties: myProperties.length,
     activeListings: myProperties.filter(p => p.status === 'active' || p.status === 'approved').length,
     totalViews: myProperties.reduce((acc, p) => acc + (p.views || 0), 0),
-    inquiries: myProperties.reduce((acc, p) => acc + (p.inquiries_count || 0), 0),
     occupancyRate: myProperties.length > 0 
       ? Math.round((myProperties.filter(p => p.status === 'rented').length / myProperties.length) * 100)
       : 0
@@ -147,32 +145,15 @@ const LandlordDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Inquiries</p>
-                  <p className="text-2xl font-bold">{stats.inquiries}</p>
-                </div>
-                <div className="w-12 h-12 rounded-lg bg-orange-100 flex items-center justify-center">
-                  <Users className="h-6 w-6 text-orange-600" />
-                </div>
-              </div>
-              <p className="text-sm text-gray-500 mt-2">
-                5 new this week
-              </p>
-            </CardContent>
-          </Card>
-
         </div>
 
-        {/* Occupancy Rate */}
+        {/* Occupied Properties Percentage */}
         <Card className="mb-8">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="font-semibold">Occupancy Rate</h3>
-                <p className="text-sm text-gray-500">{stats.occupancyRate}% of your properties are rented</p>
+                <h3 className="font-semibold">Occupied Properties</h3>
+                <p className="text-sm text-gray-500">{stats.occupancyRate}% of your properties have tenants found by us</p>
               </div>
               <div className="text-right">
                 <p className="text-2xl font-bold text-victor-green">{stats.occupancyRate}%</p>
@@ -191,14 +172,6 @@ const LandlordDashboard = () => {
           <TabsList className="mb-6 flex flex-wrap h-auto gap-2">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="properties">My Properties</TabsTrigger>
-            <TabsTrigger value="inquiries">
-              Inquiries
-              {inquiries.filter(i => i.status === 'new').length > 0 && (
-                <Badge variant="destructive" className="ml-2">
-                  {inquiries.filter(i => i.status === 'new').length}
-                </Badge>
-              )}
-            </TabsTrigger>
             <TabsTrigger value="reports">Reports & Analytics</TabsTrigger>
           </TabsList>
 
@@ -237,35 +210,6 @@ const LandlordDashboard = () => {
                             </Badge>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Recent Inquiries */}
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle>Recent Inquiries</CardTitle>
-                  <Button variant="ghost" size="sm" onClick={() => setActiveTab('inquiries')}>
-                    View All
-                  </Button>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {inquiries.slice(0, 3).map((inquiry) => (
-                      <div key={inquiry.id} className="p-3 bg-gray-50 rounded-lg">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <p className="font-medium">{inquiry.tenant}</p>
-                            <p className="text-sm text-gray-500 line-clamp-1">{inquiry.property}</p>
-                            <p className="text-sm text-gray-600 mt-1 line-clamp-2">"{inquiry.message}"</p>
-                          </div>
-                          <Badge className={getStatusBadge(inquiry.status)}>
-                            {inquiry.status}
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-gray-400 mt-2">{inquiry.receivedAt}</p>
                       </div>
                     ))}
                   </div>
@@ -310,10 +254,6 @@ const LandlordDashboard = () => {
                             <Eye className="h-4 w-4" />
                             {property.views}
                           </span>
-                          <span className="flex items-center gap-1">
-                            <Users className="h-4 w-4" />
-                            {property.inquiries}
-                          </span>
                         </div>
                         <div className="flex gap-2 mt-4">
                           <Button variant="outline" size="sm" className="flex-1">
@@ -325,58 +265,6 @@ const LandlordDashboard = () => {
                         </div>
                       </CardContent>
                     </Card>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="inquiries">
-            <Card>
-              <CardHeader>
-                <CardTitle>All Inquiries</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {inquiries.map((inquiry) => (
-                    <div key={inquiry.id} className="p-4 border rounded-lg">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-semibold">{inquiry.tenant}</h4>
-                            <Badge className={getStatusBadge(inquiry.status)}>
-                              {inquiry.status}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-victor-green mt-1">{inquiry.property}</p>
-                          <p className="text-gray-600 mt-2">"{inquiry.message}"</p>
-                          <div className="flex items-center gap-4 mt-3 text-sm text-gray-500">
-                            <span className="flex items-center gap-1">
-                              <Phone className="h-4 w-4" />
-                              {inquiry.phone}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Mail className="h-4 w-4" />
-                              {inquiry.email}
-                            </span>
-                          </div>
-                          <p className="text-xs text-gray-400 mt-2">
-                            <Calendar className="h-3 w-3 inline mr-1" />
-                            {inquiry.receivedAt}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex gap-2 mt-4">
-                        <Button size="sm" className="bg-victor-green hover:bg-victor-green-dark">
-                          <Check className="h-4 w-4 mr-2" />
-                          Mark Responded
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <Phone className="h-4 w-4 mr-2" />
-                          Call
-                        </Button>
-                      </div>
-                    </div>
                   ))}
                 </div>
               </CardContent>
