@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   LayoutDashboard,
   Users,
@@ -77,7 +76,7 @@ const AdminLayout = () => {
           </button>
         </div>
 
-        <ScrollArea className="flex-1 py-4">
+        <div className="flex-1 py-4 overflow-y-auto">
           <nav className="px-3 space-y-1">
             {menuItems.map((item) => (
               <Link
@@ -95,7 +94,7 @@ const AdminLayout = () => {
               </Link>
             ))}
           </nav>
-        </ScrollArea>
+        </div>
 
         {/* User Profile / Logout Bottom */}
         <div className="p-4 border-t border-gray-100">

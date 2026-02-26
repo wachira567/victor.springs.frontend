@@ -33,7 +33,6 @@ import {
 import Map, { Marker, NavigationControl } from 'react-map-gl/mapbox'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { formatPrice, formatDate } from '@/lib/utils'
-import { API_URL as GLOBAL_API_URL } from '@/lib/api'
 import TenantApplicationBox from '@/components/tenant/TenantApplicationBox'
 
 const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || ''
