@@ -25,9 +25,14 @@ import {
   Waves,
   Dumbbell,
   TreePine,
-  Dog
+  Dog,
+  Info
 } from 'lucide-react'
 import { formatPrice } from '@/lib/utils'
+import Map, { Marker, NavigationControl } from 'react-map-gl/mapbox'
+import 'mapbox-gl/dist/mapbox-gl.css'
+
+const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || ''
 
 const PropertyDetail = () => {
   const { id } = useParams()
@@ -166,37 +171,55 @@ const PropertyDetail = () => {
             <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
               <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
                 <div>
-                  <Badge className="mb-2">{property.property_type}</Badge>
+                  <Badge className="mb-2 bg-victor-green/10 text-victor-green border-transparent hover:bg-victor-green/20">{property.property_type}</Badge>
                   <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
                     {property.title}
                   </h1>
                   <div className="flex items-center gap-2 text-gray-600 mt-2">
                     <MapPin className="h-5 w-5 text-victor-green" />
-                    <span>{property.city}</span>
+                    <span>{property.address ? `${property.address}, ${property.city}` : property.city}</span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-3xl font-bold text-victor-green">
-                    {formatPrice(property.price)}
-                  </div>
+                  {property.units && property.units.length > 0 ? (
+                    <>
+                      <div className="text-sm font-medium text-gray-500 uppercase tracking-wide">Starting from</div>
+                      <div className="text-3xl font-bold text-victor-green">
+                        {formatPrice(Math.min(...property.units.map(u => u.price)))}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-3xl font-bold text-victor-green">
+                      {formatPrice(property.price)}
+                    </div>
+                  )}
                   <div className="text-gray-500">per month</div>
                 </div>
               </div>
 
-              {/* Quick Stats */}
+              {/* Quick Summary Stats (derived from units if present) */}
               <div className="flex flex-wrap gap-6 py-4 border-y">
-                <div className="flex items-center gap-2">
-                  <Bed className="h-5 w-5 text-gray-400" />
-                  <span className="font-medium">{property.bedrooms} Bedrooms</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Bath className="h-5 w-5 text-gray-400" />
-                  <span className="font-medium">{property.bathrooms} Bathrooms</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Maximize className="h-5 w-5 text-gray-400" />
-                  <span className="font-medium">{property.area} m²</span>
-                </div>
+                {property.units && property.units.length > 0 ? (
+                  <div className="flex items-center gap-2">
+                    <Bed className="h-5 w-5 text-gray-400" />
+                    <span className="font-medium">{property.units.length} Unit Types Available</span>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <Bed className="h-5 w-5 text-gray-400" />
+                      <span className="font-medium">{property.bedrooms} Bedrooms</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Bath className="h-5 w-5 text-gray-400" />
+                      <span className="font-medium">{property.bathrooms} Bathrooms</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Maximize className="h-5 w-5 text-gray-400" />
+                      <span className="font-medium">{property.area} m²</span>
+                    </div>
+                  </>
+                )}
                 <div className="flex items-center gap-2">
                   <Calendar className="h-5 w-5 text-gray-400" />
                   <span className="font-medium">Available: {property.available_from ? new Date(property.available_from).toDateString() : 'Immediate'}</span>
@@ -209,73 +232,136 @@ const PropertyDetail = () => {
               <TabsList className="w-full justify-start rounded-t-xl border-b bg-transparent p-0">
                 <TabsTrigger 
                   value="description" 
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-victor-green data-[state=active]:bg-transparent px-6 py-4"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-victor-green data-[state=active]:bg-transparent px-6 py-4 outline-none focus-visible:ring-0"
                 >
                   Description
                 </TabsTrigger>
                 <TabsTrigger 
-                  value="amenities"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-victor-green data-[state=active]:bg-transparent px-6 py-4"
+                  value="units"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-victor-green data-[state=active]:bg-transparent px-6 py-4 outline-none focus-visible:ring-0"
                 >
-                  Amenities
+                  Available Units
                 </TabsTrigger>
                 <TabsTrigger 
-                  value="features"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-victor-green data-[state=active]:bg-transparent px-6 py-4"
+                  value="amenities"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-victor-green data-[state=active]:bg-transparent px-6 py-4 outline-none focus-visible:ring-0"
                 >
-                  Features
+                  Building Features
                 </TabsTrigger>
                 <TabsTrigger 
                   value="location"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-victor-green data-[state=active]:bg-transparent px-6 py-4"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-victor-green data-[state=active]:bg-transparent px-6 py-4 outline-none focus-visible:ring-0"
                 >
-                  Location
+                  Location Map
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="description" className="p-6">
-                <p className="text-gray-600 whitespace-pre-line leading-relaxed">
+                <p className="text-gray-600 whitespace-pre-line leading-relaxed mb-6">
                   {property.description}
                 </p>
+                {property.tenant_agreement_fee && (
+                   <div className="bg-blue-50 border border-blue-100 p-4 rounded-lg flex items-start gap-3">
+                     <Info className="h-5 w-5 text-blue-500 mt-0.5" />
+                     <div>
+                       <h4 className="font-semibold text-blue-900">Tenant Agreement Fee Required</h4>
+                       <p className="text-sm text-blue-800">This landlord requires a one-time non-refundable agreement fee of <strong>KES {property.tenant_agreement_fee}</strong> before moving in.</p>
+                     </div>
+                   </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="units" className="p-6">
+                {property.units && property.units.length > 0 ? (
+                  <div className="space-y-4">
+                    {property.units.map((unit, idx) => (
+                      <div key={idx} className="border rounded-xl p-5 hover:border-victor-green transition-colors bg-white shadow-sm">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                          <div>
+                            <h3 className="font-bold text-xl text-gray-900">{unit.type}</h3>
+                            <p className="text-sm font-medium text-victor-green bg-victor-green/10 inline-flex px-2 py-0.5 rounded mt-1">
+                              {unit.vacantCount} vacant unit{unit.vacantCount !== 1 ? 's' : ''} available
+                            </p>
+                          </div>
+                          <div className="text-left sm:text-right">
+                            <span className="font-bold text-2xl text-gray-900">{formatPrice(unit.price)}</span>
+                            <span className="text-gray-500 text-sm block">/month per unit</span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-600 mb-4 pt-4 border-t">
+                          {unit.bedrooms > 0 && <span className="flex items-center gap-1.5"><Bed className="h-4 w-4" /> {unit.bedrooms} Bed</span>}
+                          {unit.bathrooms > 0 && <span className="flex items-center gap-1.5"><Bath className="h-4 w-4" /> {unit.bathrooms} Bath</span>}
+                          {unit.area && <span className="flex items-center gap-1.5"><Maximize className="h-4 w-4" /> {unit.area} </span>}
+                        </div>
+                        
+                        {unit.amenities && unit.amenities.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {unit.amenities.map(am => (
+                              <Badge key={am} variant="outline" className="font-normal text-gray-600 border-gray-200">
+                                {am}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 italic">This property does not have distinct units defined. It is rented as a whole.</p>
+                )}
               </TabsContent>
 
               <TabsContent value="amenities" className="p-6">
+                <h4 className="font-semibold text-lg mb-4">Shared Building Facilities</h4>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                   {(property.amenities || []).map((amenity, index) => (
-                    <div key={index} className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-victor-green/10 flex items-center justify-center">
-                        <Check className="h-5 w-5 text-victor-green" />
-                      </div>
-                      <span className="text-gray-700">{typeof amenity === 'string' ? amenity : amenity.name}</span>
+                    <div key={index} className="flex items-center gap-3 bg-gray-50 p-3 rounded-lg border">
+                      <Check className="h-4 w-4 text-victor-green" />
+                      <span className="text-gray-700 text-sm font-medium">{typeof amenity === 'string' ? amenity : amenity.name}</span>
                     </div>
                   ))}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="features" className="p-6">
-                <ul className="space-y-3">
-                  {(property.features || []).map((feature, index) => (
-                    <li key={index} className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded-full bg-victor-green/10 flex items-center justify-center flex-shrink-0">
-                        <Check className="h-4 w-4 text-victor-green" />
-                      </div>
-                      <span className="text-gray-700">{feature}</span>
-                    </li>
-                  ))}
-                  {(!property.features || property.features.length === 0) && (
-                     <li className="text-gray-500">No additional features listed.</li>
+                  {(!property.amenities || property.amenities.length === 0) && (
+                     <p className="text-gray-500 col-span-full">No shared building amenities listed.</p>
                   )}
-                </ul>
+                </div>
               </TabsContent>
 
               <TabsContent value="location" className="p-6">
-                <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-                  <div className="text-center">
-                    <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                    <p className="text-gray-600">{property.address}</p>
-                    <p className="text-sm text-gray-500 mt-1">Map integration coming soon</p>
-                  </div>
+                <div className="mb-4">
+                  <h4 className="font-semibold text-lg">{property.address}, {property.city}</h4>
+                  {property.location_description && (
+                    <p className="text-gray-600 text-sm mt-1 mb-4 italic">"{property.location_description}"</p>
+                  )}
                 </div>
+                
+                {property.latitude && property.longitude ? (
+                  <div className="h-[400px] w-full rounded-xl overflow-hidden border shadow-sm">
+                    <Map
+                      initialViewState={{
+                        longitude: parseFloat(property.longitude),
+                        latitude: parseFloat(property.latitude),
+                        zoom: 14
+                      }}
+                      mapStyle="mapbox://styles/mapbox/streets-v12"
+                      mapboxAccessToken={mapboxToken}
+                    >
+                      <NavigationControl position="top-right" />
+                      <Marker 
+                        longitude={parseFloat(property.longitude)} 
+                        latitude={parseFloat(property.latitude)} 
+                        color="red"
+                      />
+                    </Map>
+                  </div>
+                ) : (
+                  <div className="aspect-video bg-gray-100 rounded-xl flex items-center justify-center border border-dashed">
+                    <div className="text-center">
+                      <MapPin className="h-12 w-12 text-gray-300 mx-auto mb-2" />
+                      <p className="text-gray-500">Exact coordinates not provided by landlord.</p>
+                    </div>
+                  </div>
+                )}
               </TabsContent>
             </Tabs>
           </div>

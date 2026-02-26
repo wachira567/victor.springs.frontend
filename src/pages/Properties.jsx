@@ -327,16 +327,35 @@ const Properties = () => {
                       <Heart className="h-4 w-4" />
                     </button>
                     <div className="absolute bottom-3 left-3 px-3 py-1.5 rounded-lg price-tag text-white">
-                      <span className="font-bold">{formatPrice(property.price)}</span>
-                      <span className="text-xs opacity-90">/mo</span>
+                      {property.units && property.units.length > 0 ? (
+                        <div className="flex flex-col">
+                          <span className="text-[10px] uppercase opacity-90 leading-tight">Starting from</span>
+                          <div>
+                            <span className="font-bold text-lg">{formatPrice(Math.min(...property.units.map(u => u.price)))}</span>
+                            <span className="text-xs opacity-90">/mo</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <span className="font-bold">{formatPrice(property.price)}</span>
+                          <span className="text-xs opacity-90">/mo</span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   {/* Content */}
                   <CardContent className={`p-5 ${viewMode === 'list' ? 'flex-1' : ''}`}>
-                    <Badge variant="secondary" className="mb-2">
-                      {property.property_type}
-                    </Badge>
+                    <div className="flex justify-between items-start mb-2">
+                      <Badge variant="secondary" className="bg-victor-green/10 text-victor-green hover:bg-victor-green/20">
+                        {property.property_type}
+                      </Badge>
+                      {property.units && property.units.length > 0 && (
+                        <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                          {property.units.length} Unit Type{property.units.length !== 1 ? 's' : ''}
+                        </span>
+                      )}
+                    </div>
                     <h3 className="font-semibold text-lg text-gray-900 mb-2 line-clamp-1">
                       {property.title}
                     </h3>

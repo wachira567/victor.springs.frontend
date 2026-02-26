@@ -226,12 +226,33 @@ const SubmitProperty = () => {
     setIsSubmitting(true)
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      const token = localStorage.getItem('token')
+      if (!token) {
+        toast.error('You must be logged in to submit a property.')
+        navigate('/login')
+        return
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/properties`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(formData)
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to submit property')
+      }
+
       toast.success('Property submitted successfully! It will be reviewed shortly.')
       navigate('/landlord')
     } catch (error) {
-      toast.error('Failed to submit property')
+      console.error('Submission error:', error)
+      toast.error(error.message || 'Failed to submit property')
     } finally {
       setIsSubmitting(false)
     }
