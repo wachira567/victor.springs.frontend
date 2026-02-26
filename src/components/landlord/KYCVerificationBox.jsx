@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ShieldAlert, ShieldCheck, ShieldStop, Upload, FileText, CheckCircle2 } from 'lucide-react'
+import { ShieldAlert, ShieldCheck, Upload, FileText, CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
 import axios from 'axios'
 
@@ -53,7 +53,7 @@ const KYCVerificationBox = ({ user, onVerificationSubmit }) => {
       <Card className="mb-8 border-red-200 bg-red-50">
         <CardContent className="p-6 flex items-start gap-4">
           <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-            <ShieldStop className="h-6 w-6 text-red-600" />
+            <ShieldAlert className="h-6 w-6 text-red-600" />
           </div>
           <div>
             <h3 className="text-lg font-bold text-red-900">Verification Rejected</h3>
