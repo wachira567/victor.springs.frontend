@@ -42,6 +42,13 @@ import TenantApplicationBox from '@/components/tenant/TenantApplicationBox'
 
 const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || ''
 
+// Helper: fix Cloudinary URLs that were uploaded with resource_type='auto' (image) instead of 'raw'
+const fixCloudinaryPdfUrl = (url) => {
+  if (!url) return url
+  // Convert /image/upload/ to /raw/upload/ for PDFs
+  return url.replace('/image/upload/', '/raw/upload/')
+}
+
 const PropertyDetail = () => {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -469,63 +476,49 @@ const PropertyDetail = () => {
                 )}
               </TabsContent>
 
-              <TabsContent value="agreement" className="p-6">
-                <div className="max-w-xl mx-auto py-4">
-                  <div className="text-center mb-8">
-                    <div className="w-16 h-16 bg-victor-green/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <FileText className="h-8 w-8 text-victor-green" />
+              <TabsContent value="agreement" className="p-4 sm:p-6">
+                <div className="max-w-xl mx-auto py-2 sm:py-4">
+                  <div className="text-center mb-6 sm:mb-8">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-victor-green/10 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                      <FileText className="h-7 w-7 sm:h-8 sm:w-8 text-victor-green" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900">Official Tenant Agreement</h3>
-                    <p className="text-gray-600 mt-2">
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900">Official Tenant Agreement</h3>
+                    <p className="text-sm sm:text-base text-gray-600 mt-2 px-2">
                       Review and sign the tenancy agreement for this property. 
-                      You can download it now and upload the signed copy when you're ready.
+                      Download it now and upload the signed copy when you're ready.
                     </p>
                   </div>
 
                   {property.tenant_agreement_url ? (
-                    <div className="space-y-6">
-                      <div className="bg-gray-50 rounded-xl p-6 border border-dashed border-gray-200">
-                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
+                    <div className="space-y-5 sm:space-y-6">
+                      <div className="bg-gray-50 rounded-xl p-4 sm:p-6 border border-dashed border-gray-200">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
                           <div className="flex items-center gap-3">
-                            <div className="p-2 bg-victor-green/10 rounded-lg">
-                               <FileDown className="h-8 w-8 text-victor-green" />
+                            <div className="p-2 bg-victor-green/10 rounded-lg shrink-0">
+                               <FileDown className="h-7 w-7 sm:h-8 sm:w-8 text-victor-green" />
                             </div>
-                            <div className="text-left">
-                              <p className="font-semibold text-gray-900 break-all">Tenancy_Agreement.pdf</p>
+                            <div>
+                              <p className="font-semibold text-gray-900 text-sm sm:text-base">Tenancy_Agreement.pdf</p>
                               <p className="text-xs text-gray-500 uppercase">PDF Document</p>
                             </div>
                           </div>
-                          <Button 
-                            onClick={async () => {
-                              try {
-                                const response = await fetch(property.tenant_agreement_url);
-                                const blob = await response.blob();
-                                const url = window.URL.createObjectURL(blob);
-                                const link = document.createElement('a');
-                                link.href = url;
-                                link.setAttribute('download', 'Tenant_Agreement.pdf');
-                                document.body.appendChild(link);
-                                link.click();
-                                link.remove();
-                                window.URL.revokeObjectURL(url);
-                                toast.success("Download started");
-                              } catch (err) {
-                                console.error("Download failed:", err);
-                                window.open(property.tenant_agreement_url, '_blank');
-                              }
-                            }}
-                            className="w-full sm:w-auto bg-victor-green hover:bg-victor-green-dark"
+                          <a
+                            href={fixCloudinaryPdfUrl(property.tenant_agreement_url)}
+                            download="Tenant_Agreement.pdf"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center w-full sm:w-auto rounded-md px-4 py-2 text-sm font-medium bg-victor-green text-white hover:bg-victor-green-dark transition-colors"
                           >
                             <FileDown className="h-4 w-4 mr-2" />
-                            Download
-                          </Button>
+                            Download PDF
+                          </a>
                         </div>
-                        <p className="text-[10px] text-gray-400 text-center border-t pt-4 italic">
+                        <p className="text-[10px] text-gray-400 text-center border-t pt-3 italic">
                           Document ID: {property.id}-TA-VS
                         </p>
                       </div>
 
-                      <div className="relative py-4">
+                      <div className="relative py-3">
                         <div className="absolute inset-0 flex items-center">
                           <span className="w-full border-t border-gray-200" />
                         </div>
@@ -534,17 +527,17 @@ const PropertyDetail = () => {
                         </div>
                       </div>
 
-                      <div className="bg-blue-50 bg-opacity-50 rounded-xl p-6 border border-blue-100">
-                        <h4 className="font-bold text-blue-900 mb-2">Instructions for Submission</h4>
-                        <ol className="text-sm text-blue-800 space-y-2 list-decimal pl-4">
+                      <div className="bg-blue-50/80 rounded-xl p-4 sm:p-6 border border-blue-100">
+                        <h4 className="font-bold text-blue-900 mb-2 text-sm sm:text-base">Instructions for Submission</h4>
+                        <ol className="text-xs sm:text-sm text-blue-800 space-y-1.5 sm:space-y-2 list-decimal pl-4">
                           <li>Download the agreement above.</li>
                           <li>Read carefully and sign every required page.</li>
                           <li>Scan the signed document (PDF or clear Images).</li>
-                          <li>Click the button below to pay the processing fee and upload your documents.</li>
+                          <li>Click the button below to pay the processing fee and upload.</li>
                         </ol>
                         
                         <Button 
-                          className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white"
+                          className="w-full mt-4 sm:mt-6 bg-blue-600 hover:bg-blue-700 text-white"
                           disabled={isLandlordView}
                           onClick={() => {
                             setShowApplicationForm(true)
@@ -556,9 +549,9 @@ const PropertyDetail = () => {
                       </div>
                     </div>
                   ) : (
-                    <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed">
-                      <Shield className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                      <p className="text-gray-500 font-medium">Agreement not yet uploaded by landlord.</p>
+                    <div className="text-center py-10 sm:py-12 bg-gray-50 rounded-xl border border-dashed">
+                      <Shield className="h-10 w-10 sm:h-12 sm:w-12 text-gray-300 mx-auto mb-3" />
+                      <p className="text-gray-500 font-medium text-sm sm:text-base">Agreement not yet uploaded by landlord.</p>
                       <p className="text-xs text-gray-400 mt-1">Please contact property management for details.</p>
                     </div>
                   )}
