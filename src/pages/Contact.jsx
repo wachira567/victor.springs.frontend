@@ -20,8 +20,7 @@ import {
   Loader2,
   CheckCircle,
   MessageSquare,
-  HelpCircle,
-  Building2
+  HelpCircle
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -52,23 +51,23 @@ const Contact = () => {
     {
       icon: Phone,
       title: 'Phone',
-      details: ['+254 700 123 456', '+254 711 234 567'],
+      details: ['+254 717 849 484'],
       action: 'Call us',
-      href: 'tel:+254700123456',
+      href: 'tel:+254717849484',
     },
     {
       icon: Mail,
       title: 'Email',
-      details: ['info@victorsprings.com', 'support@victorsprings.com'],
+      details: ['victorspringsltd@gmail.com'],
       action: 'Send email',
-      href: 'mailto:info@victorsprings.com',
+      href: 'mailto:victorspringsltd@gmail.com',
     },
     {
       icon: MapPin,
-      title: 'Office',
-      details: ['Victor Springs Tower', 'Nairobi, Kenya'],
-      action: 'Get directions',
-      href: '#',
+      title: 'Location',
+      details: ['Ruaka, Nairobi', 'Kenya'],
+      action: null,
+      href: null,
     },
     {
       icon: Clock,
@@ -82,19 +81,19 @@ const Contact = () => {
   const faqs = [
     {
       question: 'How do I list my property?',
-      answer: 'Simply create a landlord account, click "List Property" and follow the step-by-step process to submit your property details.',
-    },
-    {
-      question: 'Is there a fee to use Victor Springs?',
-      answer: 'For tenants, our service is completely free. Landlords pay a small listing fee only when their property is successfully rented.',
+      answer: 'Create a landlord account, complete KYC verification, then click "List Property" and follow the step-by-step process to submit your property details and photos.',
     },
     {
       question: 'How are properties verified?',
-      answer: 'Our team personally visits and verifies each property before it goes live on our platform to ensure accuracy and legitimacy.',
+      answer: 'Our team reviews each listing to ensure accuracy before it goes live on the platform. We also verify landlord identity through our KYC process.',
     },
     {
-      question: 'Can I pay rent through Victor Springs?',
-      answer: 'Yes! We offer secure M-Pesa integration for rent payments, making transactions fast, safe, and convenient.',
+      question: 'How do I apply for a property?',
+      answer: 'Browse listings, find a property you like, and submit an application online. You can also contact us directly to schedule a site visit before applying.',
+    },
+    {
+      question: 'What payment methods do you accept?',
+      answer: 'Agreement fees and deposits are processed securely via M-Pesa. You will receive instant confirmation once your payment is received.',
     },
   ]
 
@@ -108,7 +107,7 @@ const Contact = () => {
             </div>
             <h2 className="text-2xl font-bold mb-2">Message Sent!</h2>
             <p className="text-gray-600 mb-6">
-              Thank you for reaching out. We'll get back to you within 24 hours.
+              Thank you for reaching out. We'll get back to you as soon as possible.
             </p>
             <Button onClick={() => setIsSubmitted(false)} variant="outline" className="w-full">
               Send Another Message
@@ -223,7 +222,7 @@ const Contact = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="general">General Inquiry</SelectItem>
-                        <SelectItem value="support">Technical Support</SelectItem>
+                        <SelectItem value="support">Support</SelectItem>
                         <SelectItem value="listing">Property Listing</SelectItem>
                         <SelectItem value="partnership">Partnership</SelectItem>
                         <SelectItem value="complaint">Complaint</SelectItem>
@@ -283,38 +282,21 @@ const Contact = () => {
               </div>
               <div className="mt-6 p-4 bg-victor-green/5 rounded-lg">
                 <div className="flex items-start gap-3">
-                  <Building2 className="h-5 w-5 text-victor-green mt-0.5" />
+                  <Mail className="h-5 w-5 text-victor-green mt-0.5" />
                   <div>
                     <p className="font-medium text-gray-900">Want to list multiple properties?</p>
                     <p className="text-sm text-gray-600 mt-1">
-                      Contact our partnership team for special rates and dedicated support.
+                      Contact us for partnership opportunities and dedicated support.
                     </p>
                     <a 
-                      href="mailto:partnerships@victorsprings.com"
+                      href="mailto:victorspringsltd@gmail.com"
                       className="text-victor-green text-sm font-medium hover:underline mt-2 inline-block"
                     >
-                      partnerships@victorsprings.com
+                      victorspringsltd@gmail.com
                     </a>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Map Placeholder */}
-      <section className="py-16 lg:py-24">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Visit Our Office</h2>
-            <p className="text-gray-600">Come say hello at our headquarters in Nairobi</p>
-          </div>
-          <div className="aspect-video bg-gray-100 rounded-2xl flex items-center justify-center">
-            <div className="text-center">
-              <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-              <p className="text-gray-600">Victor Springs Tower, Nairobi</p>
-              <p className="text-sm text-gray-500">Map integration coming soon</p>
             </div>
           </div>
         </div>

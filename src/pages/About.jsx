@@ -4,11 +4,9 @@ import {
   Home, 
   Shield, 
   Users, 
-  TrendingUp, 
-  Target,
-  Heart,
-  Award,
-  CheckCircle
+  Heart, 
+  CheckCircle,
+  TrendingUp
 } from 'lucide-react'
 
 const About = () => {
@@ -16,57 +14,22 @@ const About = () => {
     {
       icon: Shield,
       title: 'Trust & Transparency',
-      description: 'We verify every listing and landlord to ensure a safe rental experience.',
+      description: 'Every listing and landlord goes through our verification process to ensure a safe rental experience for tenants.',
     },
     {
       icon: Users,
       title: 'Community First',
-      description: 'Building a community of responsible tenants and reliable landlords.',
+      description: 'We build lasting relationships between responsible tenants and reliable landlords across Kenya.',
     },
     {
       icon: TrendingUp,
-      title: 'Continuous Innovation',
-      description: 'Constantly improving our platform with the latest technology.',
+      title: 'Continuous Improvement',
+      description: 'We are always working to improve our platform and make finding a home easier and faster.',
     },
     {
       icon: Heart,
-      title: 'Customer Obsession',
-      description: 'Putting our users needs at the center of everything we do.',
-    },
-  ]
-
-  const milestones = [
-    { year: '2020', title: 'Founded', description: 'Victor Springs launched in Nairobi' },
-    { year: '2021', title: '1,000 Properties', description: 'Reached 1,000 listed properties' },
-    { year: '2022', title: 'M-Pesa Integration', description: 'Added secure M-Pesa payments' },
-    { year: '2023', title: 'Nationwide Expansion', description: 'Expanded to Mombasa, Kisumu & more' },
-    { year: '2024', title: '10,000+ Users', description: 'Celebrated 10,000 active users' },
-  ]
-
-  const team = [
-    {
-      name: 'Victor Mwangi',
-      role: 'Founder & CEO',
-      image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&h=200&fit=crop',
-      bio: 'Former real estate professional with a passion for technology.',
-    },
-    {
-      name: 'Sarah Kimani',
-      role: 'Chief Operations Officer',
-      image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop',
-      bio: 'Expert in operations and customer experience.',
-    },
-    {
-      name: 'David Ochieng',
-      role: 'Head of Technology',
-      image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop',
-      bio: 'Tech leader with 10+ years in software development.',
-    },
-    {
-      name: 'Grace Muthoni',
-      role: 'Head of Marketing',
-      image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop',
-      bio: 'Marketing strategist driving brand growth.',
+      title: 'Customer Focused',
+      description: 'Your needs drive everything we do — from listing quality to support responsiveness.',
     },
   ]
 
@@ -80,12 +43,12 @@ const About = () => {
             About Victor Springs
           </div>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
-            Revolutionizing Rentals
-            <span className="block text-yellow-300">in Kenya</span>
+            Making Rentals in Kenya
+            <span className="block text-yellow-300">Simple & Secure</span>
           </h1>
           <p className="text-xl text-white/80 max-w-2xl mx-auto">
-            We're on a mission to make finding and renting properties in Kenya 
-            simple, secure, and stress-free.
+            We connect tenants with verified properties and make the entire rental process 
+            straightforward, transparent, and stress-free.
           </p>
         </div>
       </section>
@@ -99,18 +62,17 @@ const About = () => {
                 Our Mission
               </span>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-                Making Quality Housing Accessible to All Kenyans
+                Quality Housing, Made Accessible
               </h2>
               <p className="text-gray-600 text-lg leading-relaxed mb-6">
-                Victor Springs was born from a simple observation: finding a rental property 
-                in Kenya was unnecessarily complicated. Fake listings, untrustworthy agents, 
-                and endless paperwork made what should be an exciting journey into a frustrating ordeal.
+                Victor Springs was created to solve a real problem — finding a rental property in Kenya 
+                was often stressful, full of fake listings and unreliable agents. We set out to change that 
+                by building a platform where every listing is verified and every landlord is accountable.
               </p>
               <p className="text-gray-600 text-lg leading-relaxed mb-6">
-                We set out to change that. By combining cutting-edge technology with a 
-                human-centered approach, we've created a platform that connects quality 
-                tenants with verified landlords, making the rental process transparent, 
-                secure, and efficient.
+                Whether you're a tenant searching for your next home or a landlord looking to reach quality 
+                tenants, Victor Springs makes the connection simple, secure, and efficient. Based in Ruaka, 
+                Nairobi, we serve tenants and landlords across Nairobi, Kiambu, and Kajiado counties.
               </p>
               <div className="flex flex-wrap gap-4">
                 <div className="flex items-center gap-2">
@@ -119,7 +81,7 @@ const About = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-victor-green" />
-                  <span className="text-gray-700">Secure Payments</span>
+                  <span className="text-gray-700">Secure M-Pesa Payments</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-victor-green" />
@@ -133,10 +95,6 @@ const About = () => {
                 alt="Modern apartment building"
                 className="rounded-2xl shadow-2xl"
               />
-              <div className="absolute -bottom-6 -left-6 bg-white rounded-xl p-6 shadow-xl">
-                <div className="text-3xl font-bold text-victor-green">10K+</div>
-                <div className="text-gray-600">Happy Tenants</div>
-              </div>
             </div>
           </div>
         </div>
@@ -162,69 +120,6 @@ const About = () => {
                   </div>
                   <h3 className="font-semibold text-lg mb-2">{value.title}</h3>
                   <p className="text-gray-600 text-sm">{value.description}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Milestones Section */}
-      <section className="py-16 lg:py-24">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <span className="inline-block px-4 py-1.5 rounded-full bg-victor-green/10 text-victor-green text-sm font-medium mb-4">
-              Our Journey
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Milestones
-            </h2>
-          </div>
-          <div className="max-w-3xl mx-auto">
-            {milestones.map((milestone, index) => (
-              <div key={index} className="flex gap-6 mb-8 last:mb-0">
-                <div className="flex flex-col items-center">
-                  <div className="w-12 h-12 rounded-full bg-victor-green flex items-center justify-center text-white font-bold">
-                    {milestone.year.slice(-2)}
-                  </div>
-                  {index < milestones.length - 1 && (
-                    <div className="w-0.5 h-full bg-victor-green/20 mt-2" />
-                  )}
-                </div>
-                <div className="pb-8">
-                  <span className="text-victor-green font-semibold">{milestone.year}</span>
-                  <h3 className="text-xl font-bold text-gray-900 mt-1">{milestone.title}</h3>
-                  <p className="text-gray-600 mt-1">{milestone.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Team Section */}
-      <section className="py-16 lg:py-24 bg-gray-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <span className="inline-block px-4 py-1.5 rounded-full bg-victor-green/10 text-victor-green text-sm font-medium mb-4">
-              Our Team
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Meet the People Behind Victor Springs
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {team.map((member, index) => (
-              <Card key={index} className="overflow-hidden">
-                <img
-                  src={member.image}
-                  alt={member.name}
-                  className="w-full h-48 object-cover"
-                />
-                <CardContent className="p-6 text-center">
-                  <h3 className="font-semibold text-lg">{member.name}</h3>
-                  <p className="text-victor-green text-sm mb-2">{member.role}</p>
-                  <p className="text-gray-600 text-sm">{member.bio}</p>
                 </CardContent>
               </Card>
             ))}
