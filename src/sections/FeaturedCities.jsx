@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { MapPin, Building2, TrendingUp } from 'lucide-react'
+import { MapPin } from 'lucide-react'
 
 const FeaturedCities = () => {
   const navigate = useNavigate()
@@ -8,51 +8,43 @@ const FeaturedCities = () => {
     {
       name: 'Nairobi',
       image: 'https://images.unsplash.com/photo-1489392191049-fc10c97e64b6?w=600&h=400&fit=crop',
-      propertyCount: 4520,
-      avgPrice: 'KES 45,000',
-      growth: '+12%',
-      description: 'The capital city with diverse neighborhoods',
+      description: 'Kenya\'s vibrant capital — from upscale Kilimani to serene Karen, endless options await',
     },
     {
-      name: 'Mombasa',
-      image: 'https://images.unsplash.com/photo-1576485290814-1c72aa4bbb8e?w=600&h=400&fit=crop',
-      propertyCount: 2150,
-      avgPrice: 'KES 38,000',
-      growth: '+8%',
-      description: 'Coastal living with beautiful beaches',
-    },
-    {
-      name: 'Kisumu',
-      image: 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=600&h=400&fit=crop',
-      propertyCount: 980,
-      avgPrice: 'KES 28,000',
-      growth: '+15%',
-      description: 'Lake-side city with growing opportunities',
-    },
-    {
-      name: 'Nakuru',
+      name: 'Kiambu',
       image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop',
-      propertyCount: 750,
-      avgPrice: 'KES 25,000',
-      growth: '+10%',
-      description: 'Scenic views near Lake Nakuru',
+      description: 'Peaceful suburban living with easy access to Nairobi and lush green surroundings',
     },
     {
-      name: 'Eldoret',
-      image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&h=400&fit=crop',
-      propertyCount: 520,
-      avgPrice: 'KES 22,000',
-      growth: '+7%',
-      description: 'Athletic capital with affordable housing',
+      name: 'Kajiado',
+      image: 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=600&h=400&fit=crop',
+      description: 'Affordable modern living in fast-growing towns like Kitengela and Ongata Rongai',
     },
-    {
-      name: 'Thika',
-      image: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=600&h=400&fit=crop',
-      propertyCount: 680,
-      avgPrice: 'KES 20,000',
-      growth: '+14%',
-      description: 'Fast-growing industrial town',
-    },
+    // {
+    //   name: 'Mombasa',
+    //   image: 'https://images.unsplash.com/photo-1576485290814-1c72aa4bbb8e?w=600&h=400&fit=crop',
+    //   description: 'Coastal living with beautiful beaches',
+    // },
+    // {
+    //   name: 'Kisumu',
+    //   image: 'https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=600&h=400&fit=crop',
+    //   description: 'Lake-side city with growing opportunities',
+    // },
+    // {
+    //   name: 'Nakuru',
+    //   image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop',
+    //   description: 'Scenic views near Lake Nakuru',
+    // },
+    // {
+    //   name: 'Eldoret',
+    //   image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&h=400&fit=crop',
+    //   description: 'Athletic capital with affordable housing',
+    // },
+    // {
+    //   name: 'Thika',
+    //   image: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=600&h=400&fit=crop',
+    //   description: 'Fast-growing industrial town',
+    // },
   ]
 
   return (
@@ -100,24 +92,7 @@ const FeaturedCities = () => {
                   <span>Kenya</span>
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-1">{city.name}</h3>
-                <p className="text-white/70 text-sm mb-4">{city.description}</p>
-                
-                {/* Stats */}
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-1.5 text-white/90 text-sm">
-                    <Building2 className="h-4 w-4" />
-                    <span>{city.propertyCount.toLocaleString()} properties</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-green-400 text-sm">
-                    <TrendingUp className="h-4 w-4" />
-                    <span>{city.growth}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Price Tag */}
-              <div className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-sm">
-                <span className="text-sm font-semibold text-gray-900">From {city.avgPrice}</span>
+                <p className="text-white/70 text-sm">{city.description}</p>
               </div>
             </div>
           ))}
