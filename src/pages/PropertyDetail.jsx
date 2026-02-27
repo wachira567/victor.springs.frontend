@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import axios from 'axios'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -30,7 +31,9 @@ import {
   Info,
   FileText,
   MessageSquare,
-  Navigation
+  Navigation,
+  FileDown,
+  Upload
 } from 'lucide-react'
 import Map, { Marker, NavigationControl, GeolocateControl } from 'react-map-gl/mapbox'
 import 'mapbox-gl/dist/mapbox-gl.css'
