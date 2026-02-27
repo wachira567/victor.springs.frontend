@@ -65,6 +65,7 @@ const PropertyDetail = () => {
         ])
         
         setProperty(propRes.data.property)
+        setIsFavorite(propRes.data.property.is_liked || false)
         if (settingsRes.data.settings?.contact_number) {
            setGlobalPhone(settingsRes.data.settings.contact_number)
         }
@@ -327,6 +328,12 @@ const PropertyDetail = () => {
                 >
                   Location Map
                 </TabsTrigger>
+                <TabsTrigger 
+                  value="agreement"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-victor-green data-[state=active]:bg-transparent px-6 py-4 outline-none focus-visible:ring-0"
+                >
+                  Tenant Agreement
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="description" className="p-6">
@@ -455,6 +462,86 @@ const PropertyDetail = () => {
                     </div>
                   </div>
                 )}
+              </TabsContent>
+
+              <TabsContent value="agreement" className="p-6">
+                <div className="max-w-xl mx-auto py-4">
+                  <div className="text-center mb-8">
+                    <div className="w-16 h-16 bg-victor-green/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <FileText className="h-8 w-8 text-victor-green" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900">Official Tenant Agreement</h3>
+                    <p className="text-gray-600 mt-2">
+                      Review and sign the tenancy agreement for this property. 
+                      You can download it now and upload the signed copy when you're ready.
+                    </p>
+                  </div>
+
+                  {property.tenant_agreement_url ? (
+                    <div className="space-y-6">
+                      <div className="bg-gray-50 rounded-xl p-6 border border-dashed border-gray-200">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-3">
+                            <FileDown className="h-10 w-10 text-victor-green" />
+                            <div className="text-left">
+                              <p className="font-semibold text-gray-900">Tenancy_Agreement.pdf</p>
+                              <p className="text-xs text-gray-500">Standard Legal Document</p>
+                            </div>
+                          </div>
+                          <Button 
+                            onClick={() => window.open(property.tenant_agreement_url, '_blank')}
+                            className="bg-victor-green hover:bg-victor-green-dark"
+                          >
+                            Download
+                          </Button>
+                        </div>
+                        <p className="text-xs text-gray-500 text-center border-t pt-4">
+                          Note: You'll need to print, sign, and scan this document back to us.
+                        </p>
+                      </div>
+
+                      <div className="relative py-4">
+                        <div className="absolute inset-0 flex items-center">
+                          <span className="w-full border-t border-gray-200" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                          <span className="bg-white px-2 text-gray-500 font-medium">Ready to Proceed?</span>
+                        </div>
+                      </div>
+
+                      <div className="bg-blue-50 bg-opacity-50 rounded-xl p-6 border border-blue-100">
+                        <h4 className="font-bold text-blue-900 mb-2">Instructions for Submission</h4>
+                        <ol className="text-sm text-blue-800 space-y-2 list-decimal pl-4">
+                          <li>Download the agreement above.</li>
+                          <li>Read carefully and sign every required page.</li>
+                          <li>Scan the signed document (PDF or clear Images).</li>
+                          <li>Click the button below to pay the processing fee and upload your documents.</li>
+                        </ol>
+                        
+                        <Button 
+                          className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white"
+                          disabled={isLandlordView}
+                          onClick={() => {
+                            if (!currentUser) {
+                              toast.info("Please sign in to start your application.")
+                              return
+                            }
+                            setShowApplicationForm(true)
+                          }}
+                        >
+                          <Upload className="h-4 w-4 mr-2" />
+                          {currentUser ? 'Pay Fee & Upload Signed Copy' : 'Sign In to Upload'}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed">
+                      <Shield className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                      <p className="text-gray-500 font-medium">Agreement not yet uploaded by landlord.</p>
+                      <p className="text-xs text-gray-400 mt-1">Please contact property management for details.</p>
+                    </div>
+                  )}
+                </div>
               </TabsContent>
             </Tabs>
           </div>

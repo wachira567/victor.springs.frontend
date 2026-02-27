@@ -8,8 +8,12 @@ import { toast } from 'sonner'
 import axios from 'axios'
 
 const TenantApplicationBox = ({ property, user, onClose }) => {
-  const [step, setStep] = useState(property?.tenant_agreement_fee > 0 ? 'payment' : 'form')
+  const [step, setStep] = useState(property?.tenant_agreement_fee > 0 ? 'payment' : 'otp-init')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [verificationToken, setVerificationToken] = useState('')
+  const [otpCode, setOtpCode] = useState('')
+  const [isPhoneVerified, setIsPhoneVerified] = useState(false)
+  
   const [formData, setFormData] = useState({
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
@@ -22,6 +26,9 @@ const TenantApplicationBox = ({ property, user, onClose }) => {
     mpesaPhone: user?.phone === 'Not Provided' ? '' : (user?.phone || '')
   })
   const [paymentId, setPaymentId] = useState(null)
+
+  const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
+  const token = localStorage.getItem('victorsprings_token')
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -43,9 +50,6 @@ const TenantApplicationBox = ({ property, user, onClose }) => {
 
     setIsSubmitting(true)
     try {
-      const token = localStorage.getItem('victorsprings_token')
-      const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
-      
       const res = await axios.post(`${API_URL}/payments/initiate`, {
         amount: property.tenant_agreement_fee,
         phone_number: formData.mpesaPhone,
@@ -66,9 +70,6 @@ const TenantApplicationBox = ({ property, user, onClose }) => {
   }
 
   const pollPaymentStatus = async (txnId) => {
-    const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
-    const token = localStorage.getItem('victorsprings_token')
-    
     let attempts = 0
     const interval = setInterval(async () => {
       try {
@@ -80,7 +81,7 @@ const TenantApplicationBox = ({ property, user, onClose }) => {
         if (res.data.payment.status === 'completed') {
           clearInterval(interval)
           toast.success('Payment successful!')
-          setStep('form')
+          setStep('otp-init')
           setIsSubmitting(false)
         } else if (res.data.payment.status === 'failed') {
           clearInterval(interval)
@@ -97,6 +98,53 @@ const TenantApplicationBox = ({ property, user, onClose }) => {
     }, 5000)
   }
 
+  const sendOtp = async () => {
+    if (!formData.phone || !formData.phone.startsWith('+')) {
+      toast.error('Please provide a valid phone number starting with + (e.g. +254)')
+      return
+    }
+    
+    setIsSubmitting(true)
+    try {
+      const res = await axios.post(`${API_URL}/otp/send`, { phone: formData.phone })
+      setVerificationToken(res.data.verification_token)
+      setStep('otp-verify')
+      toast.success('Verification code sent to your phone.')
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to send OTP')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const verifyOtp = async () => {
+    if (!otpCode || otpCode.length < 4) {
+      toast.error('Please enter a valid verification code.')
+      return
+    }
+    
+    setIsSubmitting(true)
+    try {
+      const res = await axios.post(`${API_URL}/otp/verify`, {
+        phone: formData.phone,
+        otp: otpCode,
+        token: verificationToken
+      })
+      
+      if (res.data.verified) {
+        setIsPhoneVerified(true)
+        setStep('form')
+        toast.success('Phone verified successfully!')
+      } else {
+        toast.error('Invalid verification code.')
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'OTP verification failed')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   const handleSubmitApplication = async () => {
     if (!formData.firstName || !formData.lastName || !formData.idNumber || !formData.phone) {
       toast.error('Please fill in all personal details.')
@@ -106,7 +154,6 @@ const TenantApplicationBox = ({ property, user, onClose }) => {
       toast.error('Please upload both sides of your ID.')
       return
     }
-    // Only enforce signed agreement if property has one configured
     if (property.tenant_agreement_url && !formData.signedAgreement) {
       toast.error('Please upload a scanned/signed copy of the Tenant Agreement.')
       return
@@ -131,9 +178,6 @@ const TenantApplicationBox = ({ property, user, onClose }) => {
       if (formData.idDocumentBack) data.append('id_document_back', formData.idDocumentBack)
       if (formData.signedAgreement) data.append('signed_agreement', formData.signedAgreement)
 
-      const token = localStorage.getItem('victorsprings_token')
-      const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
-      
       await axios.post(`${API_URL}/applications/`, data, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -141,7 +185,7 @@ const TenantApplicationBox = ({ property, user, onClose }) => {
         }
       })
       
-      toast.success('Your application was submitted successfully! We will contact you soon.')
+      toast.success('Application submitted successfully!')
       setStep('success')
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to submit application.')
@@ -211,15 +255,88 @@ const TenantApplicationBox = ({ property, user, onClose }) => {
             </div>
           )}
 
+          {step === 'otp-init' && (
+            <div className="space-y-6 text-center py-6">
+              <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                <Phone className="h-8 w-8 text-victor-blue" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">Verify Your Identity</h3>
+              <p className="text-gray-600 max-w-md mx-auto">
+                Please provide your phone number to receive a verification code (OTP). This ensures a secure application process.
+              </p>
+
+              <div className="max-w-sm mx-auto mt-6">
+                <Label className="text-left block mb-2 font-medium">Phone Number</Label>
+                <Input 
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  placeholder="+254700000000"
+                  className="h-12 text-lg px-4"
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              <div className="pt-6">
+                <Button 
+                  onClick={sendOtp} 
+                  disabled={isSubmitting || !formData.phone}
+                  className="w-full max-w-sm h-12 text-lg bg-victor-green hover:bg-victor-green-dark"
+                >
+                  {isSubmitting ? 'Sending Code...' : 'Send Verification Code'}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {step === 'otp-verify' && (
+            <div className="space-y-6 text-center py-6">
+              <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                <ShieldAlert className="h-8 w-8 text-victor-blue" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">Enter Verification Code</h3>
+              <p className="text-gray-600 max-w-md mx-auto">
+                We've sent a 6-digit code to <span className="font-bold">{formData.phone}</span>.
+              </p>
+
+              <div className="max-w-sm mx-auto mt-6">
+                <Input 
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value)}
+                  placeholder="000000"
+                  className="h-14 text-center text-2xl tracking-[0.5em] font-bold"
+                  maxLength={6}
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              <div className="pt-6 flex flex-col gap-3 max-w-sm mx-auto">
+                <Button 
+                  onClick={verifyOtp} 
+                  disabled={isSubmitting || otpCode.length < 4}
+                  className="h-12 text-lg bg-victor-green hover:bg-victor-green-dark"
+                >
+                  {isSubmitting ? 'Verifying...' : 'Verify & Continue'}
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setStep('otp-init')}
+                  disabled={isSubmitting}
+                >
+                  Change Number
+                </Button>
+              </div>
+            </div>
+          )}
+
           {step === 'form' && (
             <div className="space-y-6">
               
-              {/* Optional: Agreement Download Area */}
               {property?.tenant_agreement_url && (
                 <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div>
                     <h4 className="font-semibold text-blue-900">Step 1: Download & Sign Agreement</h4>
-                    <p className="text-sm text-blue-800">Please download, print, read, and sign this agreement. You must upload the signed copy below.</p>
+                    <p className="text-sm text-blue-800">Please download and sign the agreement. Upload the signed copy below.</p>
                   </div>
                   <Button 
                     variant="outline" 
@@ -245,8 +362,8 @@ const TenantApplicationBox = ({ property, user, onClose }) => {
                   <Input name="idNumber" value={formData.idNumber} onChange={handleInputChange} />
                 </div>
                 <div>
-                  <Label>Contact Phone Number *</Label>
-                  <Input name="phone" value={formData.phone} onChange={handleInputChange} placeholder="+254" />
+                  <Label>Contact Phone (Verified)</Label>
+                  <Input name="phone" value={formData.phone} disabled className="bg-gray-50" />
                 </div>
               </div>
 
@@ -338,7 +455,7 @@ const TenantApplicationBox = ({ property, user, onClose }) => {
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-2">Application Received!</h3>
               <p className="text-gray-600 mb-8 max-w-sm mx-auto">
-                Thank you! Your verified application and documents have been sent to our administrators. We will contact you soon.
+                Your application has been submitted and is currently <b>Pending Approval</b>. We will notify you through the phone number provided once an admin verifies your details.
               </p>
               <Button onClick={onClose} className="bg-victor-green hover:bg-victor-green-dark">
                 Close Window

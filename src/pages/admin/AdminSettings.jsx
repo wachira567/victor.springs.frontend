@@ -68,34 +68,64 @@ const AdminSettings = () => {
         <CardHeader>
           <CardTitle>Contact Information</CardTitle>
           <CardDescription>
-            This number will be displayed on all property listings for WhatsApp messages and phone calls.
+            Configure official contact details for notifications and display.
           </CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="animate-pulse h-10 bg-gray-200 rounded w-full mb-4"></div>
+            <div className="space-y-4 animate-pulse">
+              <div className="h-10 bg-gray-200 rounded w-full"></div>
+              <div className="h-10 bg-gray-200 rounded w-full"></div>
+              <div className="h-10 bg-gray-200 rounded w-full"></div>
+            </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
-                <label className="text-sm font-medium mb-1 block">Global Contact Number</label>
-                <div className="flex gap-4">
+                <label className="text-sm font-medium mb-1 block">Global Public Contact (WhatsApp/Call)</label>
+                <Input 
+                  placeholder="e.g. +254712345678"
+                  value={settings.contact_number || ''}
+                  onChange={(e) => setSettings({ ...settings, contact_number: e.target.value })}
+                  disabled={user?.role !== 'super_admin'}
+                />
+                <p className="text-xs text-gray-400 mt-1">Displayed publicly on property pages.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Primary Admin Email</label>
                   <Input 
-                    placeholder="e.g. +254712345678"
-                    value={settings.contact_number}
-                    onChange={(e) => setSettings({ ...settings, contact_number: e.target.value })}
+                    type="email"
+                    placeholder="admin@victorsprings.com"
+                    value={settings.primary_admin_email || ''}
+                    onChange={(e) => setSettings({ ...settings, primary_admin_email: e.target.value })}
                     disabled={user?.role !== 'super_admin'}
                   />
-                  <Button 
-                    onClick={handleSave} 
-                    disabled={isSaving || user?.role !== 'super_admin'}
-                    className="bg-victor-green hover:bg-victor-green-dark"
-                  >
-                    <Save className="mr-2 h-4 w-4" />
-                    {isSaving ? 'Saving...' : 'Save Settings'}
-                  </Button>
+                  <p className="text-xs text-gray-400 mt-1">Receives payment notifications.</p>
                 </div>
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Primary Admin Phone</label>
+                  <Input 
+                    placeholder="+254712345678"
+                    value={settings.primary_admin_phone || ''}
+                    onChange={(e) => setSettings({ ...settings, primary_admin_phone: e.target.value })}
+                    disabled={user?.role !== 'super_admin'}
+                  />
+                  <p className="text-xs text-gray-400 mt-1">Receives SMS alerts.</p>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t">
+                <Button 
+                  onClick={handleSave} 
+                  disabled={isSaving || user?.role !== 'super_admin'}
+                  className="w-full bg-victor-green hover:bg-victor-green-dark"
+                >
+                  <Save className="mr-2 h-4 w-4" />
+                  {isSaving ? 'Saving...' : 'Save All Settings'}
+                </Button>
                 {user?.role !== 'super_admin' && (
-                  <p className="text-xs text-red-500 mt-2">Only Super Admins can modify global settings.</p>
+                  <p className="text-xs text-red-500 mt-2 text-center">Only Super Admins can modify global settings.</p>
                 )}
               </div>
             </div>

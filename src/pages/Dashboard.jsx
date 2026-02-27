@@ -49,28 +49,35 @@ const Dashboard = () => {
   }, [searchParams])
 
   const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
-  // Replaced mock data with State arrays
-  const savedProperties = []
-  const applications = []
+  const [savedProperties, setSavedProperties] = useState([])
+  const [applications, setApplications] = useState([])
+  const [payments, setPayments] = useState([])
+  const [isLoadingDashboard, setIsLoadingDashboard] = useState(true)
   const notifications = []
-  const [scheduledViewings, setScheduledViewings] = useState([])
-  const [isLoadingViewings, setIsLoadingViewings] = useState(true)
 
   useEffect(() => {
-    const fetchViewings = async () => {
+    const fetchDashboardData = async () => {
       try {
         const token = localStorage.getItem('victorsprings_token')
-        const response = await axios.get(`${API_URL}/visits/`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        setScheduledViewings(response.data.visits || [])
+        const headers = { Authorization: `Bearer ${token}` }
+        
+        const [savedRes, appsRes, paymentsRes] = await Promise.all([
+          axios.get(`${API_URL}/properties/liked`, { headers }),
+          axios.get(`${API_URL}/applications/my`, { headers }),
+          axios.get(`${API_URL}/payments/my-payments`, { headers })
+        ])
+        
+        setSavedProperties(savedRes.data.properties || [])
+        setApplications(appsRes.data.applications || [])
+        setPayments(paymentsRes.data.payments || [])
+        
       } catch (error) {
-        console.error('Error fetching viewings:', error)
+        console.error('Error fetching dashboard data:', error)
       } finally {
-        setIsLoadingViewings(false)
+        setIsLoadingDashboard(false)
       }
     }
-    fetchViewings()
+    fetchDashboardData()
   }, [])
 
   const handleSaveProfile = async () => {
@@ -120,14 +127,10 @@ const Dashboard = () => {
                 </div>
 
                 {/* Quick Stats */}
-                <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="grid grid-cols-1 gap-4 mb-6">
                   <div className="text-center p-3 bg-gray-50 rounded-lg">
                     <div className="text-xl font-bold text-victor-green">{savedProperties.length}</div>
-                    <div className="text-xs text-gray-500">Saved</div>
-                  </div>
-                  <div className="text-center p-3 bg-gray-50 rounded-lg">
-                    <div className="text-xl font-bold text-victor-blue">{scheduledViewings.length}</div>
-                    <div className="text-xs text-gray-500">Viewings</div>
+                    <div className="text-xs text-gray-500">Saved Properties</div>
                   </div>
                 </div>
 
@@ -136,7 +139,6 @@ const Dashboard = () => {
                   {[
                     { id: 'overview', label: 'Overview', icon: Home },
                     { id: 'saved', label: 'Saved Properties', icon: Heart },
-                    { id: 'viewings', label: 'My Viewings', icon: Calendar },
                     { id: 'applications', label: 'Applications', icon: FileText },
                     { id: 'payments', label: 'Payments', icon: CreditCard },
                     { id: 'notifications', label: 'Notifications', icon: Bell },
@@ -178,7 +180,7 @@ const Dashboard = () => {
                 </Card>
 
                 {/* Quick Actions */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate('/properties')}>
                     <CardContent className="p-6 text-center">
                       <Home className="h-8 w-8 mx-auto mb-3 text-victor-green" />
@@ -191,13 +193,6 @@ const Dashboard = () => {
                       <Heart className="h-8 w-8 mx-auto mb-3 text-red-500" />
                       <h3 className="font-medium">Saved ({savedProperties.length})</h3>
                       <p className="text-sm text-gray-500 mt-1">View your favorites</p>
-                    </CardContent>
-                  </Card>
-                  <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setActiveTab('viewings')}>
-                    <CardContent className="p-6 text-center">
-                      <Calendar className="h-8 w-8 mx-auto mb-3 text-victor-blue" />
-                      <h3 className="font-medium">Viewings ({scheduledViewings.length})</h3>
-                      <p className="text-sm text-gray-500 mt-1">Manage appointments</p>
                     </CardContent>
                   </Card>
                 </div>
@@ -240,7 +235,7 @@ const Dashboard = () => {
                         onClick={() => navigate(`/properties/${property.id}`)}
                       >
                         <img
-                          src={property.image}
+                          src={property.images?.[0]?.url || property.image || 'https://via.placeholder.com/400x300?text=No+Image'}
                           alt={property.title}
                           className="w-24 h-20 object-cover rounded-lg"
                         />
@@ -248,57 +243,23 @@ const Dashboard = () => {
                           <h4 className="font-medium line-clamp-1">{property.title}</h4>
                           <p className="text-sm text-gray-500 flex items-center gap-1">
                             <MapPin className="h-3 w-3" />
-                            {property.location}
+                            {property.city}
                           </p>
                           <p className="text-victor-green font-semibold mt-1">
                             {formatPrice(property.price)}/mo
                           </p>
-                          <p className="text-xs text-gray-400">
-                            Saved {formatDate(property.savedAt)}
-                          </p>
                         </div>
                       </div>
                     ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Viewings Tab */}
-            {activeTab === 'viewings' && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>My Viewings</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {scheduledViewings.map((viewing) => (
-                      <div key={viewing.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-lg bg-victor-green/10 flex items-center justify-center">
-                            <Calendar className="h-6 w-6 text-victor-green" />
-                          </div>
-                          <div>
-                            <h4 className="font-medium">{viewing.property?.title || 'Unknown Property'}</h4>
-                            <p className="text-sm text-gray-500 flex items-center gap-2">
-                              <Clock className="h-3 w-3" />
-                              {formatDate(viewing.visit_date)} at {viewing.visit_time}
-                            </p>
-                          </div>
-                        </div>
-                        <Badge className={getStatusBadge(viewing.status)}>
-                          {viewing.status.replace('_', ' ')}
-                        </Badge>
-                      </div>
-                    ))}
-                    {isLoadingViewings && <p className="text-center py-4">Loading viewings...</p>}
-                    {!isLoadingViewings && scheduledViewings.length === 0 && (
-                      <p className="text-center text-gray-500 py-4">You have no scheduled viewings.</p>
+                    {isLoadingDashboard && <p className="col-span-full text-center py-4">Loading saved properties...</p>}
+                    {!isLoadingDashboard && savedProperties.length === 0 && (
+                      <p className="col-span-full text-center text-gray-500 py-4">You haven't saved any properties yet.</p>
                     )}
                   </div>
                 </CardContent>
               </Card>
             )}
+
 
             {/* Applications Tab */}
             {activeTab === 'applications' && (
@@ -309,18 +270,70 @@ const Dashboard = () => {
                 <CardContent>
                   <div className="space-y-4">
                     {applications.map((app) => (
-                      <div key={app.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div key={app.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg gap-4">
                         <div>
-                          <h4 className="font-medium">{app.property}</h4>
-                          <p className="text-sm text-gray-500">
-                            Submitted {formatDate(app.submittedAt)}
-                          </p>
+                          <h4 className="font-medium">{app.property_title || 'Property Application'}</h4>
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-gray-500">
+                             <p className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {app.property_city}</p>
+                             <p className="flex items-center gap-1"><Clock className="h-3 w-3" /> Submitted {formatDate(app.created_at)}</p>
+                          </div>
                         </div>
-                        <Badge className={getStatusBadge(app.status)}>
-                          {app.status.replace('_', ' ')}
-                        </Badge>
+                        <div className="flex items-center gap-3">
+                           <Badge className={getStatusBadge(app.status)}>
+                             {app.status.replace('_', ' ')}
+                           </Badge>
+                           <Button variant="ghost" size="sm" onClick={() => navigate(`/properties/${app.property_id}`)}>View Property</Button>
+                        </div>
                       </div>
                     ))}
+                    {isLoadingDashboard && <p className="text-center py-4">Loading applications...</p>}
+                    {!isLoadingDashboard && applications.length === 0 && (
+                      <div className="text-center py-8">
+                        <FileText className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                        <p className="text-gray-500">You haven't submitted any applications yet.</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Payments Tab */}
+            {activeTab === 'payments' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Payment History</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {payments.map((p) => (
+                      <div key={p.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg gap-4">
+                        <div className="flex items-center gap-4">
+                          <div className={`p-2 rounded-full ${p.status === 'completed' ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600'}`}>
+                             <CreditCard className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-gray-900">{p.payment_type.replace('_', ' ').toUpperCase()}</h4>
+                            <p className="text-sm text-gray-500">
+                              {p.mpesa_receipt || 'No Receipt'} • {formatDate(p.created_at)}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-bold text-gray-900">{formatPrice(p.amount)}</div>
+                          <Badge variant="outline" className={p.status === 'completed' ? 'text-green-600 border-green-200 bg-green-50' : ''}>
+                             {p.status}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                    {isLoadingDashboard && <p className="text-center py-4">Loading payment history...</p>}
+                    {!isLoadingDashboard && payments.length === 0 && (
+                      <div className="text-center py-8">
+                        <CreditCard className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                        <p className="text-gray-500">No payment records found.</p>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
