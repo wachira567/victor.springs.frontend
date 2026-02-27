@@ -72,7 +72,7 @@ const Contact = () => {
     {
       icon: Clock,
       title: 'Working Hours',
-      details: ['Mon - Fri: 8AM - 6PM', 'Sat: 9AM - 2PM'],
+      details: ['Mon - Fri: 8:30AM - 5PM', 'Sat: 9AM - 1PM'],
       action: null,
       href: null,
     },

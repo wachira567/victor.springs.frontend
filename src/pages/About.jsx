@@ -1,5 +1,4 @@
 import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { 
   Home, 
   Shield, 
@@ -139,19 +138,18 @@ const About = () => {
               we're here to help you every step of the way.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                className="bg-white text-victor-green hover:bg-gray-100"
-                onClick={() => window.location.href = '/properties'}
+              <a
+                href="/properties"
+                className="inline-flex items-center justify-center px-8 py-3 rounded-md bg-white text-victor-green font-semibold hover:bg-gray-100 transition-colors"
               >
                 Find a Home
-              </Button>
-              <Button 
-                variant="outline" 
-                className="border-white text-white hover:bg-white/10"
-                onClick={() => window.location.href = '/register'}
+              </a>
+              <a
+                href="/register"
+                className="inline-flex items-center justify-center px-8 py-3 rounded-md border-2 border-white text-white font-semibold hover:bg-white/10 transition-colors"
               >
                 List Your Property
-              </Button>
+              </a>
             </div>
           </div>
         </div>
