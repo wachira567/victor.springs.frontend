@@ -132,6 +132,30 @@ const TenantApplicationBox = ({ property, user, onClose }) => {
         console.error('Polling error', err)
       }
     }, 5000)
+    return interval // Return the interval ID
+  }
+
+  const checkStatusManual = async () => {
+    if (!paymentId) return
+    setIsSubmitting(true)
+    try {
+      const res = await axios.get(`${API_URL}/payments/status/${paymentId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      
+      if (res.data.payment.status === 'completed') {
+        toast.success('Payment confirmed!')
+        setStep('otp-init')
+      } else if (res.data.payment.status === 'failed') {
+        toast.error('Payment failed. Please try again.')
+      } else {
+        toast.info('Payment still pending. Please wait for the STK prompt or check again in a moment.')
+      }
+    } catch (err) {
+      toast.error('Could not verify payment status.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const sendOtp = async () => {
@@ -282,10 +306,19 @@ const TenantApplicationBox = ({ property, user, onClose }) => {
                 <Button 
                   onClick={initiatePayment} 
                   disabled={isSubmitting || !formData.mpesaPhone}
-                  className="w-full max-w-sm h-12 text-lg bg-[#25D366] hover:bg-[#1ebd5a] text-white"
+                  className="w-full max-w-sm h-12 text-lg bg-[#43B02A] hover:bg-[#389423] text-white"
                 >
                   {isSubmitting ? 'Processing M-Pesa...' : `Pay KES ${property?.tenant_agreement_fee}`}
                 </Button>
+                {paymentId && !isSubmitting && (
+                   <Button 
+                     variant="outline"
+                     onClick={checkStatusManual}
+                     className="w-full max-w-sm mt-3 border-[#43B02A] text-[#43B02A] hover:bg-[#43B02A]/10"
+                   >
+                     I've Paid, Check Status
+                   </Button>
+                )}
               </div>
               <p className="text-xs text-gray-500 mt-4">You will receive an STK prompt on your phone.</p>
             </div>

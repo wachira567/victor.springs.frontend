@@ -542,7 +542,7 @@ const PropertyDetail = () => {
                         </ol>
                         
                         <Button 
-                          className="w-full mt-4 sm:mt-6 bg-blue-600 hover:bg-blue-700 text-white"
+                          className="w-full mt-4 sm:mt-6 bg-[#43B02A] hover:bg-[#389423] text-white"
                           disabled={isLandlordView}
                           onClick={() => {
                             setShowApplicationForm(true)
@@ -616,7 +616,7 @@ const PropertyDetail = () => {
                           </div>
                         </div>
                         <Button 
-                          className={`w-full ${isLandlordView ? 'bg-gray-400 cursor-not-allowed' : 'bg-victor-green hover:bg-victor-green-dark'} text-white`}
+                          className={`w-full ${isLandlordView ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#43B02A] hover:bg-[#389423]'} text-white`}
                           disabled={isLandlordView}
                           onClick={() => setShowApplicationForm(true)}
                         >
