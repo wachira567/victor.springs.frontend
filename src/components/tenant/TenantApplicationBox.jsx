@@ -75,8 +75,12 @@ const TenantApplicationBox = ({ property, user, onClose }) => {
   }
 
   const initiatePayment = async () => {
-    if (!formData.mpesaPhone.startsWith('+')) {
-      toast.error('Your phone number MUST start with your country code (e.g., +254).')
+    // Relaxed validation: check for broad Kenyan format (starts with +, 254, 07, 01, or 7/1)
+    const phone = formData.mpesaPhone.replace(/\s/g, '')
+    const isValidLocal = /^(?:\+254|254|07|01|7|1)\d{8,9}$/.test(phone)
+    
+    if (!isValidLocal) {
+      toast.error('Please enter a valid M-Pesa phone number (e.g., 0712345678 or +254712345678).')
       return
     }
 
@@ -267,7 +271,7 @@ const TenantApplicationBox = ({ property, user, onClose }) => {
                     name="mpesaPhone"
                     value={formData.mpesaPhone}
                     onChange={handleInputChange}
-                    placeholder="+254700000000"
+                    placeholder="e.g., 0712345678 or +254..."
                     className="pl-10 h-12 text-lg"
                     disabled={isSubmitting}
                   />
