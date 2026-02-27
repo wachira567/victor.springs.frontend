@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { ShieldAlert, FileText, Upload, CheckCircle2, X, FileDown, Phone } from 'lucide-react'
 import { toast } from 'sonner'
 import { downloadFile } from '@/lib/downloadFile'
+import { validateIdImage } from '@/lib/validateIdImage'
 import axios from 'axios'
 
 const TenantApplicationBox = ({ property, user, onClose }) => {
@@ -42,9 +43,20 @@ const TenantApplicationBox = ({ property, user, onClose }) => {
     }))
   }
 
-  const handleFileChange = (e, name) => {
+  const handleFileChange = async (e, name) => {
     const file = e.target.files[0]
     if (!file) return
+
+    // Validate ID images before accepting
+    if (name === 'idDocumentFront' || name === 'idDocumentBack') {
+      const { valid, error } = await validateIdImage(file)
+      if (!valid) {
+        toast.error(error, { duration: 6000 })
+        e.target.value = '' // Reset the input
+        return
+      }
+    }
+
     setFormData(prev => ({ ...prev, [name]: file }))
     // Generate preview URLs for ID images
     if (name === 'idDocumentFront') {
