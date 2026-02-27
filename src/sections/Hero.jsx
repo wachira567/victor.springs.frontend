@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Search, MapPin, Home, Building } from 'lucide-react'
+import heroBg from '@/assets/VictorspringsHomepage.jpg'
 
 const Hero = () => {
   const navigate = useNavigate()
@@ -31,10 +32,10 @@ const Hero = () => {
 
   return (
     <section className="relative min-h-[600px] lg:min-h-[700px] flex items-center">
-      {/* Background Image */}
+      {/* Background Image — local asset loads instantly, Cloudinary loads on top */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url("https://res.cloudinary.com/dtbe44muv/image/upload/v1772186997/VictorspringsHomepage_vu2wjw.jpg")` }}
+        style={{ backgroundImage: `url("https://res.cloudinary.com/dtbe44muv/image/upload/v1772186997/VictorspringsHomepage_vu2wjw.jpg"), url(${heroBg})` }}
       />
       {/* Dark Overlay for readability */}
       <div className="absolute inset-0 bg-black/50" />
