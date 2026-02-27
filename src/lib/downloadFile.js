@@ -17,10 +17,12 @@ export async function downloadFile(url, filename = 'document.pdf') {
 
   toast.info('Downloading...')
 
-  // Step 1: Try direct fetch (works for Cloudinary which serves CORS headers)
+  // Step 1: Try direct fetch
+  // For Cloudinary image-type URLs: inject fl_attachment
+  // For raw-type URLs: fetch as-is (they are public and support no transforms)
   let fetchUrl = url
-  if (url.includes('cloudinary.com') && url.includes('/upload/') && !url.includes('fl_attachment')) {
-    fetchUrl = url.replace('/upload/', '/upload/fl_attachment/')
+  if (url.includes('cloudinary.com') && url.includes('/image/upload/') && !url.includes('fl_attachment')) {
+    fetchUrl = url.replace('/image/upload/', '/image/upload/fl_attachment/')
   }
 
   try {
