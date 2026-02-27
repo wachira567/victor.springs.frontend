@@ -17,17 +17,33 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    // Check for stored auth on mount
-    const storedUser = localStorage.getItem('victorsprings_user')
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser))
-      } catch (e) {
-        localStorage.removeItem('victorsprings_user')
-      }
+  const refreshUser = async () => {
+    const token = localStorage.getItem('victorsprings_token')
+    if (!token) {
+      setUser(null)
+      setIsLoading(false)
+      return
     }
-    setIsLoading(false)
+
+    try {
+      const response = await axios.get(`${API_URL}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      const userData = response.data.user
+      setUser(userData)
+      localStorage.setItem('victorsprings_user', JSON.stringify(userData))
+    } catch (error) {
+      console.error('Profile refresh failed:', error)
+      if (error.response?.status === 401) {
+        logout()
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    refreshUser()
   }, [])
 
   const login = async (email, password) => {
@@ -36,9 +52,9 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.post(`${API_URL}/auth/login`, { email, password })
       const { token, user: userData } = response.data
       
-      setUser(userData)
-      localStorage.setItem('victorsprings_user', JSON.stringify(userData))
       localStorage.setItem('victorsprings_token', token)
+      localStorage.setItem('victorsprings_user', JSON.stringify(userData))
+      setUser(userData)
       
       toast.success(`Welcome back, ${userData.name}!`)
       return { success: true, user: userData }
@@ -62,9 +78,9 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.post(`${API_URL}/auth/google`, payload)
       const { token, user: userData } = response.data
       
-      setUser(userData)
-      localStorage.setItem('victorsprings_user', JSON.stringify(userData))
       localStorage.setItem('victorsprings_token', token)
+      localStorage.setItem('victorsprings_user', JSON.stringify(userData))
+      setUser(userData)
       
       toast.success(`Welcome back, ${userData.name}!`)
       return { success: true, user: userData }
@@ -104,14 +120,18 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     setUser(null)
-    localStorage.removeItem('victorsprings_user')
-    localStorage.removeItem('victorsprings_token')
+    localStorage.clear() // Hard clear all potential leakage
     toast.success('Logged out successfully')
+    window.location.href = '/login'
   }
 
   const updateProfile = async (updates) => {
     try {
-      const updatedUser = { ...user, ...updates }
+      const token = localStorage.getItem('victorsprings_token')
+      const response = await axios.put(`${API_URL}/auth/me`, updates, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      const updatedUser = response.data.user
       setUser(updatedUser)
       localStorage.setItem('victorsprings_user', JSON.stringify(updatedUser))
       toast.success('Profile updated successfully')
@@ -133,6 +153,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     isLoading,
+    refreshUser,
     isAuthenticated: !!user,
     login,
     loginWithGoogle,

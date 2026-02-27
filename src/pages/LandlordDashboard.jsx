@@ -26,8 +26,16 @@ import KYCVerificationBox from '@/components/landlord/KYCVerificationBox'
 
 const LandlordDashboard = () => {
   const navigate = useNavigate()
-  const { user, hasRole } = useAuth()
+  const { user, hasRole, isLoading: isAuthLoading } = useAuth()
   const [activeTab, setActiveTab] = useState('overview')
+
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-victor-green"></div>
+      </div>
+    )
+  }
 
   // Redirect if not landlord
   if (!hasRole(['landlord', 'super_admin'])) {
