@@ -13,7 +13,7 @@ const HowItWorks = () => {
       number: '02',
       icon: Phone,
       title: 'Contact Us',
-      description: 'Interested in a property? Call or WhatsApp us directly to ask questions, get more details, or schedule a convenient site visit.',
+      description: 'Interested in a property? Call or WhatsApp us directly to ask questions, learn more about the unit, or speak with our agents for guidance.',
       color: 'from-blue-500 to-cyan-500',
     },
     {

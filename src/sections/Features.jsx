@@ -25,11 +25,6 @@ const Features = () => {
       description: 'Found a place you love? The next step in your rental journey is to apply online. Submit your documents, ID, and details digitally. It\'s contactless, easy, and fast — all you need to ensure your home will not flee while you\'re occupied with paperwork!',
     },
     {
-      icon: Phone,
-      title: 'Book Site Visits',
-      description: 'Found a perfect place and want to see it in real life? Call or WhatsApp our team to arrange a tour and make sure the property matches the photos. Simply pick a date and preferred time and we\'ll help you schedule your visit.',
-    },
-    {
       icon: CreditCard,
       title: 'Pay via M-Pesa',
       description: 'Cash payments are yesterday. Pay your agreement fees and deposits digitally in mere minutes thanks to our M-Pesa integration! Enjoy instant confirmation, full payment history records, and more, all backed by world-class digital security.',

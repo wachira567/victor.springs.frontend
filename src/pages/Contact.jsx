@@ -89,7 +89,7 @@ const Contact = () => {
     },
     {
       question: 'How do I apply for a property?',
-      answer: 'Browse listings, find a property you like, and submit an application online. You can also contact us directly to schedule a site visit before applying.',
+      answer: 'Browse listings, find a property you like, and submit an application online. You can also contact us directly via Call or WhatsApp if you have questions about a unit before applying.',
     },
     {
       question: 'What payment methods do you accept?',
