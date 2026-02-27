@@ -1,12 +1,13 @@
 import { toast } from 'sonner'
 
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
+
 /**
- * Downloads a file directly in the current page without redirecting.
- * Uses fetch + Blob to force a browser download dialog.
- * Falls back to opening URL if fetch fails due to CORS.
+ * Downloads a file via the backend proxy — guarantees direct download
+ * without page redirect, CORS, or CDN format issues.
  *
- * @param {string} url - The file URL to download
- * @param {string} filename - Desired filename for the download (e.g. "agreement.pdf")
+ * @param {string} url - The file URL (Cloudinary, Uploadcare, etc.)
+ * @param {string} filename - Desired filename (e.g. "agreement.pdf")
  */
 export async function downloadFile(url, filename = 'document.pdf') {
   if (!url) {
@@ -14,10 +15,17 @@ export async function downloadFile(url, filename = 'document.pdf') {
     return
   }
 
+  const token = localStorage.getItem('victorsprings_token')
+
   try {
     toast.info('Downloading...')
 
-    const response = await fetch(url, { mode: 'cors' })
+    // Route through backend proxy for reliable delivery
+    const proxyUrl = `${API_URL}/download/?url=${encodeURIComponent(url)}&filename=${encodeURIComponent(filename)}`
+
+    const response = await fetch(proxyUrl, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`)
@@ -32,23 +40,14 @@ export async function downloadFile(url, filename = 'document.pdf') {
     document.body.appendChild(link)
     link.click()
 
-    // Cleanup
     setTimeout(() => {
       URL.revokeObjectURL(blobUrl)
       link.remove()
     }, 100)
 
-    toast.success('Download started')
+    toast.success('Download complete')
   } catch (err) {
-    console.warn('Direct download failed, using fallback:', err)
-    // Fallback: use an anchor tag with download attribute
-    const link = document.createElement('a')
-    link.href = url
-    link.download = filename
-    link.target = '_blank'
-    link.rel = 'noopener noreferrer'
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
+    console.error('Download failed:', err)
+    toast.error('Download failed. Please try again.')
   }
 }
