@@ -21,6 +21,9 @@ import LandlordDashboard from './pages/LandlordDashboard'
 import SubmitProperty from './pages/SubmitProperty'
 import About from './pages/About'
 import Contact from './pages/Contact'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import TermsOfService from './pages/TermsOfService'
+import CookiePolicy from './pages/CookiePolicy'
 import VerifyEmail from './pages/VerifyEmail'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
@@ -96,6 +99,9 @@ function App() {
             <Route path="/" element={<MarketingRoute><Home /></MarketingRoute>} />
             <Route path="/about" element={<GuestOnlyRoute><About /></GuestOnlyRoute>} />
             <Route path="/contact" element={<GuestOnlyRoute><Contact /></GuestOnlyRoute>} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
+            <Route path="/cookie-policy" element={<CookiePolicy />} />
             
             <Route path="/properties" element={<StandardPageRoute><Properties /></StandardPageRoute>} />
             <Route path="/properties/:id" element={<StandardPageRoute><PropertyDetail /></StandardPageRoute>} />
