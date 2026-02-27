@@ -393,6 +393,7 @@ const Register = () => {
                     }}
                     theme="outline"
                     size="large"
+                    use_fedcm_for_prompt={false}
                   />
                 </div>
               </div>
