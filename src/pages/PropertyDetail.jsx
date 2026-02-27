@@ -45,7 +45,7 @@ const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || ''
 const PropertyDetail = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { hasRole, currentUser } = useAuth()
+  const { hasRole, user: currentUser } = useAuth()
   const [isFavorite, setIsFavorite] = useState(false)
   const [selectedImage, setSelectedImage] = useState(0)
   const [showApplicationForm, setShowApplicationForm] = useState(false)
