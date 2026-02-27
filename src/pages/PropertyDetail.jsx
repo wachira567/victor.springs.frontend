@@ -92,6 +92,10 @@ const PropertyDetail = () => {
        return
     }
     try {
+      if (isLandlordView) {
+        toast.info("Management accounts cannot like properties.")
+        return
+      }
       const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
       const token = localStorage.getItem('victorsprings_token')
       const headers = { Authorization: `Bearer ${token}` }
@@ -146,13 +150,14 @@ const PropertyDetail = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Landlord View Banner */}
+      {/* Landlord/Admin View Banner */}
       {isLandlordView && (
         <div className="bg-yellow-50 border-b border-yellow-200">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-center gap-2 text-yellow-800">
             <Shield className="h-4 w-4" />
-            <p className="font-medium text-sm">
-              You are viewing this property as a Landlord. Booking actions and applications are disabled.
+            <p className="font-medium text-sm text-center">
+              You are viewing this property as {hasRole('super_admin') ? 'a Super Admin' : hasRole('admin') ? 'an Admin' : 'a Landlord'}. 
+              Booking actions and applications are disabled.
             </p>
           </div>
         </div>
@@ -164,7 +169,11 @@ const PropertyDetail = () => {
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
-              onClick={() => isLandlordView ? navigate('/landlord') : navigate(-1)}
+              onClick={() => {
+                if (hasRole(['super_admin', 'admin'])) navigate('/admin/properties')
+                else if (hasRole('landlord')) navigate('/landlord')
+                else navigate(-1)
+              }}
               className="gap-2"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -175,7 +184,8 @@ const PropertyDetail = () => {
                 variant="outline"
                 size="icon"
                 onClick={handleLikeToggle}
-                className={isFavorite ? 'text-red-500' : ''}
+                className={`${isFavorite ? 'text-red-500' : ''} ${isLandlordView ? 'opacity-50 cursor-not-allowed' : ''}`}
+                title={isLandlordView ? "Cannot like as management" : "Like Property"}
               >
                 <Heart className={`h-4 w-4 ${isFavorite ? 'fill-current' : ''}`} />
               </Button>
@@ -452,75 +462,73 @@ const PropertyDetail = () => {
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="sticky top-24 space-y-6">
-              {!isLandlordView && (
-                <>
-                  {/* Contact Card */}
-                  <Card>
-                    <CardContent className="p-6">
-                      <h3 className="font-semibold text-lg mb-4 text-gray-900">Interested in this property?</h3>
-                      <p className="text-gray-600 text-sm mb-6">
-                        Get in touch with us to book a viewing or to inquire about moving in. We're here to help!
-                      </p>
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="font-semibold text-lg mb-4 text-gray-900">Interested in this property?</h3>
+                  <p className="text-gray-600 text-sm mb-6">
+                    Get in touch with us to book a viewing or to inquire about moving in. We're here to help!
+                  </p>
 
-                      <div className="space-y-3">
+                  <div className="space-y-3">
+                    <Button 
+                      className={`w-full ${isLandlordView ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#25D366] hover:bg-[#1ebd5a]'} text-white`}
+                      disabled={isLandlordView}
+                      onClick={() => {
+                         handleInteract('whatsapp')
+                         if (globalPhone) {
+                           window.open(`https://wa.me/${globalPhone.replace(/\\D/g, '')}?text=Hi, I am interested in ${property.title} (${window.location.href})`, '_blank')
+                         }
+                      }}
+                    >
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Chat on WhatsApp
+                    </Button>
+
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      disabled={isLandlordView}
+                      onClick={() => {
+                         handleInteract('call')
+                         if (globalPhone) {
+                           window.open(`tel:${globalPhone}`, '_self')
+                         }
+                      }}
+                    >
+                      <Phone className="h-4 w-4 mr-2" />
+                      Call Us Now
+                    </Button>
+
+                    {currentUser && (
+                      <>
+                        <div className="relative py-2">
+                          <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t border-gray-200" />
+                          </div>
+                          <div className="relative flex justify-center text-xs uppercase">
+                            <span className="bg-white px-2 text-gray-500">Or</span>
+                          </div>
+                        </div>
                         <Button 
-                          className="w-full bg-[#25D366] hover:bg-[#1ebd5a] text-white"
-                          onClick={() => {
-                             handleInteract('whatsapp')
-                             if (globalPhone) {
-                               window.open(`https://wa.me/${globalPhone.replace(/\\D/g, '')}?text=Hi, I am interested in ${property.title} (${window.location.href})`, '_blank')
-                             }
-                          }}
+                          className={`w-full ${isLandlordView ? 'bg-gray-400 cursor-not-allowed' : 'bg-victor-green hover:bg-victor-green-dark'} text-white`}
+                          disabled={isLandlordView}
+                          onClick={() => setShowApplicationForm(true)}
                         >
-                          <MessageSquare className="h-4 w-4 mr-2" />
-                          Chat on WhatsApp
+                          <FileText className="h-4 w-4 mr-2" />
+                          Apply for Tenancy
                         </Button>
-
-                        <Button 
-                          variant="outline" 
-                          className="w-full"
-                          onClick={() => {
-                             handleInteract('call')
-                             if (globalPhone) {
-                               window.open(`tel:${globalPhone}`, '_self')
-                             }
-                          }}
-                        >
-                          <Phone className="h-4 w-4 mr-2" />
-                          Call Us Now
-                        </Button>
-
-                        {!isLandlordView && currentUser && (
-                          <>
-                            <div className="relative py-2">
-                              <div className="absolute inset-0 flex items-center">
-                                <span className="w-full border-t border-gray-200" />
-                              </div>
-                              <div className="relative flex justify-center text-xs uppercase">
-                                <span className="bg-white px-2 text-gray-500">Or</span>
-                              </div>
-                            </div>
-                            <Button 
-                              className="w-full bg-victor-green hover:bg-victor-green-dark text-white"
-                              onClick={() => setShowApplicationForm(true)}
-                            >
-                              <FileText className="h-4 w-4 mr-2" />
-                              Apply for Tenancy
-                            </Button>
-                          </>
-                        )}
-                        {!currentUser && (
-                           <p className="text-xs text-gray-500 mt-2 text-center">Sign in to apply for this property directly.</p>
-                        )}
-                      </div>
-                      
-                      {!globalPhone && (
-                        <p className="text-xs text-red-500 mt-3 text-center">Contact numbers are temporarily unavailable.</p>
-                      )}
-                    </CardContent>
-                  </Card>
-                </>
-              )}
+                      </>
+                    )}
+                    {!currentUser && !isLandlordView && (
+                       <p className="text-xs text-gray-500 mt-2 text-center">Sign in to apply for this property directly.</p>
+                    )}
+                  </div>
+                  
+                  {!globalPhone && (
+                    <p className="text-xs text-red-500 mt-3 text-center">Contact numbers are temporarily unavailable.</p>
+                  )}
+                </CardContent>
+              </Card>
 
               {/* Safety Tips */}
               <Card className="bg-blue-50 border-blue-100">

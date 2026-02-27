@@ -43,9 +43,8 @@ const PublicLayout = () => (
 const MarketingRoute = ({ children }) => {
   const { user, isAuthenticated } = useAuth()
   if (isAuthenticated) {
-    if (user?.role === 'super_admin' || user?.role === 'admin') return <Navigate to="/admin" replace />
     if (user?.role === 'landlord') return <Navigate to="/landlord" replace />
-    // Tenants can access the Home page
+    // Tenants, Admins, and Super Admins can access the Home page
   }
   return children
 }
@@ -63,7 +62,6 @@ const GuestOnlyRoute = ({ children }) => {
 const StandardPageRoute = ({ children }) => {
   const { user, isAuthenticated } = useAuth()
   if (isAuthenticated) {
-    if (user?.role === 'super_admin' || user?.role === 'admin') return <Navigate to="/admin" replace />
     if (user?.role === 'landlord') return <Navigate to="/landlord" replace />
   }
   return children
