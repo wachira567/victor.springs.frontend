@@ -42,7 +42,7 @@ const MarketingRoute = ({ children }) => {
   if (isAuthenticated) {
     if (user?.role === 'super_admin' || user?.role === 'admin') return <Navigate to="/admin" replace />
     if (user?.role === 'landlord') return <Navigate to="/landlord" replace />
-    return <Navigate to="/properties" replace />
+    // Tenants can access marketing pages (Home, About, Contact)
   }
   return children
 }

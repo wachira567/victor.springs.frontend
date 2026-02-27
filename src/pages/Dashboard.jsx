@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import axios from 'axios'
 import { useAuth } from '@/contexts/AuthContext'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -30,8 +30,10 @@ import { getInitials, formatPrice, formatDate } from '@/lib/utils'
 
 const Dashboard = () => {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { user, updateProfile } = useAuth()
-  const [activeTab, setActiveTab] = useState('overview')
+  const initialTab = searchParams.get('tab') || 'overview'
+  const [activeTab, setActiveTab] = useState(initialTab)
   const [isEditing, setIsEditing] = useState(false)
   const [profileData, setProfileData] = useState({
     firstName: user?.firstName || '',
@@ -39,6 +41,12 @@ const Dashboard = () => {
     phone: user?.phone || '',
     email: user?.email || '',
   })
+
+  // Sync tab when URL changes (e.g. from navbar link)
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab) setActiveTab(tab)
+  }, [searchParams])
 
   const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
   // Replaced mock data with State arrays

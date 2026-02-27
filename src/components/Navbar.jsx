@@ -3,289 +3,234 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from '@/components/ui/sheet'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { 
-  Menu, 
-  Home, 
-  Building2, 
-  User, 
-  LogOut, 
-  LayoutDashboard,
-  Shield,
-  PlusCircle,
-  Phone,
-  Info
+  Home,
+  Menu,
+  X,
+  LogOut,
+  User,
+  FileText,
+  Heart,
+  CreditCard,
+  ChevronDown,
+  Building2,
+  LayoutDashboard
 } from 'lucide-react'
-import { getInitials } from '@/lib/utils'
 
 const Navbar = () => {
-  const { user, isAuthenticated, logout, hasRole } = useAuth()
+  const { user, isAuthenticated, logout } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
-  const [isOpen, setIsOpen] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
 
-  const isActive = (path) => location.pathname === path
+  const isTenant = isAuthenticated && user?.role === 'tenant'
+  const isLandlord = isAuthenticated && user?.role === 'landlord'
+  const isAdmin = isAuthenticated && (user?.role === 'admin' || user?.role === 'super_admin')
 
-  const tenantLinks = isAuthenticated ? [
-    { path: '/properties', label: 'Properties', icon: Building2 },
-  ] : [
-    { path: '/', label: 'Home', icon: Home },
-    { path: '/about', label: 'About', icon: Info },
-    { path: '/contact', label: 'Contact', icon: Phone },
-    { path: '/properties', label: 'Properties', icon: Building2 },
+  // Guest links: Home, Properties, About, Contact
+  const guestLinks = [
+    { label: 'Home', path: '/' },
+    { label: 'Properties', path: '/properties' },
+    { label: 'About', path: '/about' },
+    { label: 'Contact', path: '/contact' },
   ]
 
-  const landlordLinks = [
-    { path: '/landlord', label: 'Dashboard', icon: LayoutDashboard },
+  // Signed-in tenant links: Properties, Applications, Saved Properties, Payments
+  const tenantLinks = [
+    { label: 'Properties', path: '/properties', icon: Building2 },
+    { label: 'Applications', path: '/dashboard?tab=applications', icon: FileText },
+    { label: 'Saved Properties', path: '/dashboard?tab=saved', icon: Heart },
+    { label: 'Payments', path: '/dashboard?tab=payments', icon: CreditCard },
   ]
 
-  const displayLinks = hasRole('landlord') ? landlordLinks : tenantLinks
+  const links = isTenant ? tenantLinks : (!isAuthenticated ? guestLinks : [])
+
+  const isActive = (path) => {
+    if (path.includes('?tab=')) {
+      const tabName = new URLSearchParams(path.split('?')[1]).get('tab')
+      return location.pathname === '/dashboard' && location.search.includes(`tab=${tabName}`)
+    }
+    return location.pathname === path
+  }
 
   const handleLogout = () => {
     logout()
-    navigate('/')
-    setIsOpen(false)
-  }
-
-  const getDashboardLink = () => {
-    if (hasRole('super_admin')) return '/admin'
-    if (hasRole('landlord')) return '/landlord'
-    return '/dashboard'
+    setProfileOpen(false)
+    navigate('/login')
   }
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-victor-green to-victor-blue">
-              <Home className="h-5 w-5 text-white" />
+        <div className="flex items-center justify-between h-16">
+
+          {/* Logo / Home Icon */}
+          <Link
+            to={isTenant ? '/' : (isAdmin ? '/admin' : (isLandlord ? '/landlord' : '/'))}
+            className="flex items-center gap-2 group"
+          >
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-victor-green to-victor-blue transition-transform group-hover:scale-105">
+              <Home className="h-4 w-4 text-white" />
             </div>
-            <span className="text-xl font-bold gradient-text">Victor Springs</span>
+            <span className="text-lg font-bold bg-gradient-to-r from-victor-green to-victor-blue bg-clip-text text-transparent hidden sm:inline">
+              Victor Springs
+            </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-1">
-            {displayLinks.map((link) => (
+          {/* Desktop Nav Links */}
+          <nav className="hidden md:flex items-center gap-1">
+            {links.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
                   isActive(link.path)
-                    ? 'text-victor-green nav-active'
-                    : 'text-gray-600 hover:text-victor-green hover:bg-gray-50'
+                    ? 'bg-victor-green/10 text-victor-green'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
               >
+                {link.icon && <link.icon className="h-4 w-4" />}
                 {link.label}
               </Link>
             ))}
-          </div>
+          </nav>
 
-          {/* Desktop Auth Buttons */}
-          <div className="hidden md:flex items-center gap-3">
-            {isAuthenticated ? (
-              <>
-                {hasRole(['landlord', 'super_admin']) && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                    onClick={() => navigate('/submit-property')}
-                  >
-                    <PlusCircle className="h-4 w-4" />
-                    List Property
-                  </Button>
-                )}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-                      <Avatar className="h-9 w-9">
-                        <AvatarImage src={user?.avatar} alt={user?.firstName} />
-                        <AvatarFallback className="bg-victor-green text-white">
-                          <User className="h-5 w-5" />
-                        </AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56" align="end" forceMount>
-                    <DropdownMenuLabel className="font-normal">
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium">{user?.firstName} {user?.lastName}</p>
-                        <p className="text-xs text-muted-foreground">{user?.email}</p>
-                        <p className="text-xs text-victor-green capitalize">{user?.role?.replace('_', ' ')}</p>
-                      </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => navigate(getDashboardLink())}>
-                      <LayoutDashboard className="mr-2 h-4 w-4" />
-                      Dashboard
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate('/dashboard')}>
-                      <User className="mr-2 h-4 w-4" />
-                      Profile
-                    </DropdownMenuItem>
-                    {hasRole('super_admin') && (
-                      <DropdownMenuItem onClick={() => navigate('/admin')}>
-                        <Shield className="mr-2 h-4 w-4" />
-                        Admin Panel
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout} className="text-red-600">
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Log out
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </>
-            ) : (
-              <>
-                <Button variant="ghost" size="sm" onClick={() => navigate('/login')}>
-                  Sign In
+          {/* Right Side: Auth Buttons or User Menu */}
+          <div className="flex items-center gap-3">
+            {!isAuthenticated ? (
+              /* Guest: Login / Register */
+              <div className="hidden md:flex items-center gap-2">
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/login">Log In</Link>
                 </Button>
-                <Button 
-                  size="sm" 
-                  className="bg-victor-green hover:bg-victor-green-dark"
-                  onClick={() => navigate('/register')}
-                >
-                  Get Started
+                <Button size="sm" className="bg-victor-green hover:bg-victor-green/90 text-white" asChild>
+                  <Link to="/register">Sign Up</Link>
                 </Button>
-              </>
-            )}
-          </div>
-
-          {/* Mobile Menu */}
-          <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="icon">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] sm:w-[350px]">
-              <div className="flex flex-col gap-6">
-                {/* Mobile Logo */}
-                <Link to="/" className="flex items-center gap-2" onClick={() => setIsOpen(false)}>
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-victor-green to-victor-blue">
-                    <Home className="h-5 w-5 text-white" />
-                  </div>
-                  <span className="text-xl font-bold gradient-text">Victor Springs</span>
-                </Link>
-
-                {/* Mobile User Info */}
-                {isAuthenticated && (
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={user?.avatar} alt={user?.firstName} />
-                      <AvatarFallback className="bg-victor-green text-white">
-                        <User className="h-5 w-5" />
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium">{user?.firstName} {user?.lastName}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{user?.role?.replace('_', ' ')}</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Mobile Nav Links */}
-                <div className="flex flex-col gap-1">
-                  {displayLinks.map((link) => (
-                    <Link
-                      key={link.path}
-                      to={link.path}
-                      onClick={() => setIsOpen(false)}
-                      className={`flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-md transition-colors ${
-                        isActive(link.path)
-                          ? 'bg-victor-green/10 text-victor-green'
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-victor-green'
-                      }`}
-                    >
-                      <link.icon className="h-4 w-4" />
-                      {link.label}
-                    </Link>
-                  ))}
-                </div>
-
-                {/* Mobile Auth Actions */}
-                <div className="flex flex-col gap-2">
-                  {isAuthenticated ? (
-                    <>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start gap-2"
-                        onClick={() => {
-                          navigate(getDashboardLink())
-                          setIsOpen(false)
-                        }}
-                      >
-                        <LayoutDashboard className="h-4 w-4" />
-                        Dashboard
-                      </Button>
-                      {hasRole(['landlord', 'super_admin']) && (
-                        <Button
-                          variant="outline"
-                          className="w-full justify-start gap-2"
-                          onClick={() => {
-                            navigate('/submit-property')
-                            setIsOpen(false)
-                          }}
-                        >
-                          <PlusCircle className="h-4 w-4" />
-                          List Property
-                        </Button>
-                      )}
-                      <Button
-                        variant="destructive"
-                        className="w-full justify-start gap-2"
-                        onClick={handleLogout}
-                      >
-                        <LogOut className="h-4 w-4" />
-                        Log out
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button
-                        variant="outline"
-                        className="w-full"
-                        onClick={() => {
-                          navigate('/login')
-                          setIsOpen(false)
-                        }}
-                      >
-                        Sign In
-                      </Button>
-                      <Button
-                        className="w-full bg-victor-green hover:bg-victor-green-dark"
-                        onClick={() => {
-                          navigate('/register')
-                          setIsOpen(false)
-                        }}
-                      >
-                        Get Started
-                      </Button>
-                    </>
-                  )}
-                </div>
               </div>
-            </SheetContent>
-          </Sheet>
+            ) : (
+              /* Signed in: User dropdown */
+              <div className="relative">
+                <button
+                  onClick={() => setProfileOpen(!profileOpen)}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors"
+                >
+                  <div className="h-7 w-7 rounded-full bg-gradient-to-br from-victor-green to-victor-blue flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">
+                      {(user?.name || 'U').charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <span className="hidden sm:inline text-sm font-medium text-gray-700 max-w-[100px] truncate">
+                    {user?.name?.split(' ')[0] || 'User'}
+                  </span>
+                  <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform ${profileOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Dropdown Menu */}
+                {profileOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setProfileOpen(false)} />
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50 animate-in fade-in slide-in-from-top-2">
+                      <div className="px-4 py-2 border-b border-gray-100">
+                        <p className="text-sm font-semibold text-gray-900">{user?.name}</p>
+                        <p className="text-xs text-gray-500">{user?.email}</p>
+                        <span className="inline-block mt-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-victor-green/10 text-victor-green capitalize">
+                          {user?.role?.replace('_', ' ')}
+                        </span>
+                      </div>
+
+                      {isTenant && (
+                        <Link
+                          to="/dashboard"
+                          onClick={() => setProfileOpen(false)}
+                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          <LayoutDashboard className="h-4 w-4" />
+                          My Dashboard
+                        </Link>
+                      )}
+
+                      <Link
+                        to={isTenant ? '/dashboard?tab=profile' : (isLandlord ? '/landlord' : '/admin/profile')}
+                        onClick={() => setProfileOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <User className="h-4 w-4" />
+                        Profile Settings
+                      </Link>
+
+                      <div className="border-t border-gray-100 mt-1 pt-1">
+                        <button
+                          onClick={handleLogout}
+                          className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left transition-colors"
+                        >
+                          <LogOut className="h-4 w-4" />
+                          Log Out
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Mobile Menu Toggle */}
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
         </div>
       </div>
-    </nav>
+
+      {/* Mobile Menu Panel */}
+      {mobileOpen && (
+        <div className="md:hidden border-t border-gray-200 bg-white shadow-lg animate-in slide-in-from-top-1">
+          <div className="container mx-auto px-4 py-4 space-y-1">
+            {links.map((link) => (
+              <Link
+                key={link.path}
+                to={link.path}
+                onClick={() => setMobileOpen(false)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                  isActive(link.path)
+                    ? 'bg-victor-green/10 text-victor-green'
+                    : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                {link.icon && <link.icon className="h-4 w-4" />}
+                {link.label}
+              </Link>
+            ))}
+
+            {!isAuthenticated && (
+              <div className="pt-3 border-t border-gray-100 space-y-2">
+                <Button variant="outline" className="w-full justify-center" asChild onClick={() => setMobileOpen(false)}>
+                  <Link to="/login">Log In</Link>
+                </Button>
+                <Button className="w-full justify-center bg-victor-green hover:bg-victor-green/90 text-white" asChild onClick={() => setMobileOpen(false)}>
+                  <Link to="/register">Sign Up</Link>
+                </Button>
+              </div>
+            )}
+
+            {isTenant && (
+              <div className="pt-3 border-t border-gray-100">
+                <Link
+                  to="/dashboard"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50"
+                >
+                  <LayoutDashboard className="h-4 w-4" />
+                  My Dashboard
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </header>
   )
 }
 
