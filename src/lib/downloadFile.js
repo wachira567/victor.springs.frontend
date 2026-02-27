@@ -3,11 +3,11 @@ import { toast } from 'sonner'
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
 
 /**
- * Downloads a file via the backend proxy — guarantees direct download
- * without page redirect, CORS, or CDN format issues.
- *
- * @param {string} url - The file URL (Cloudinary, Uploadcare, etc.)
- * @param {string} filename - Desired filename (e.g. "agreement.pdf")
+ * Force-download a file in-page without redirecting.
+ * Strategy:
+ *   1. For Cloudinary URLs: fetch directly with fl_attachment transform
+ *   2. Fallback: backend proxy
+ *   3. Last resort: hidden anchor with download attribute
  */
 export async function downloadFile(url, filename = 'document.pdf') {
   if (!url) {
@@ -15,39 +15,65 @@ export async function downloadFile(url, filename = 'document.pdf') {
     return
   }
 
-  const token = localStorage.getItem('victorsprings_token')
+  toast.info('Downloading...')
+
+  // Step 1: Try direct fetch (works for Cloudinary which serves CORS headers)
+  let fetchUrl = url
+  if (url.includes('cloudinary.com') && url.includes('/upload/') && !url.includes('fl_attachment')) {
+    fetchUrl = url.replace('/upload/', '/upload/fl_attachment/')
+  }
 
   try {
-    toast.info('Downloading...')
-
-    // Route through backend proxy for reliable delivery
-    const proxyUrl = `${API_URL}/download/?url=${encodeURIComponent(url)}&filename=${encodeURIComponent(filename)}`
-
-    const response = await fetch(proxyUrl, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`)
+    const resp = await fetch(fetchUrl)
+    if (resp.ok) {
+      const blob = await resp.blob()
+      triggerDownload(blob, filename)
+      toast.success('Download complete')
+      return
     }
-
-    const blob = await response.blob()
-    const blobUrl = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = blobUrl
-    link.download = filename
-    link.style.display = 'none'
-    document.body.appendChild(link)
-    link.click()
-
-    setTimeout(() => {
-      URL.revokeObjectURL(blobUrl)
-      link.remove()
-    }, 100)
-
-    toast.success('Download complete')
-  } catch (err) {
-    console.error('Download failed:', err)
-    toast.error('Download failed. Please try again.')
+  } catch (e) {
+    // CORS or network error — try proxy
   }
+
+  // Step 2: Try backend proxy
+  try {
+    const token = localStorage.getItem('victorsprings_token')
+    const proxyUrl = `${API_URL}/download/?url=${encodeURIComponent(url)}&filename=${encodeURIComponent(filename)}`
+    const resp = await fetch(proxyUrl, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    })
+    if (resp.ok) {
+      const blob = await resp.blob()
+      triggerDownload(blob, filename)
+      toast.success('Download complete')
+      return
+    }
+  } catch (e) {
+    // Proxy not available
+  }
+
+  // Step 3: Last resort — anchor download (may open in new tab for PDFs)
+  const link = document.createElement('a')
+  link.href = fetchUrl
+  link.download = filename
+  link.target = '_blank'
+  link.rel = 'noopener noreferrer'
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  toast.success('Download started')
+}
+
+function triggerDownload(blob, filename) {
+  const blobUrl = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = blobUrl
+  link.download = filename
+  link.style.display = 'none'
+  document.body.appendChild(link)
+  link.click()
+  setTimeout(() => {
+    URL.revokeObjectURL(blobUrl)
+    link.remove()
+  }, 100)
 }
