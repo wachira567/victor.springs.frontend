@@ -29,9 +29,10 @@ import {
   Dog,
   Info,
   FileText,
-  MessageSquare
+  MessageSquare,
+  Navigation
 } from 'lucide-react'
-import Map, { Marker, NavigationControl } from 'react-map-gl/mapbox'
+import Map, { Marker, NavigationControl, GeolocateControl } from 'react-map-gl/mapbox'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { formatPrice, formatDate } from '@/lib/utils'
 import TenantApplicationBox from '@/components/tenant/TenantApplicationBox'
@@ -100,6 +101,26 @@ const PropertyDetail = () => {
       setProperty(prev => ({ ...prev, like_count: data.like_count }))
     } catch (err) {
        console.error("Failed to toggle like", err)
+    }
+  }
+
+  const handleGetDirections = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords
+        const url = `https://www.google.com/maps/dir/?api=1&origin=${latitude},${longitude}&destination=${property.latitude},${property.longitude}`
+        window.open(url, '_blank')
+        handleInteract('map')
+      }, (error) => {
+        console.error("Error getting location: ", error)
+        const url = `https://www.google.com/maps/dir/?api=1&destination=${property.latitude},${property.longitude}`
+        window.open(url, '_blank')
+        toast.error("Could not get your current location. Opening directions with destination only.")
+      })
+    } else {
+      const url = `https://www.google.com/maps/dir/?api=1&destination=${property.latitude},${property.longitude}`
+      window.open(url, '_blank')
+      toast.error("Geolocation is not supported by your browser.")
     }
   }
 
@@ -378,26 +399,43 @@ const PropertyDetail = () => {
                 </div>
                 
                 {property.latitude && property.longitude ? (
-                  <div 
-                    className="h-[400px] w-full rounded-xl overflow-hidden border shadow-sm"
-                    onClick={() => handleInteract('map')}
-                  >
-                    <Map
-                      initialViewState={{
-                        longitude: parseFloat(property.longitude),
-                        latitude: parseFloat(property.latitude),
-                        zoom: 14
-                      }}
-                      mapStyle="mapbox://styles/mapbox/streets-v12"
-                      mapboxAccessToken={mapboxToken}
+                  <div className="space-y-4">
+                    <div 
+                      className="h-[400px] w-full rounded-xl overflow-hidden border shadow-sm relative"
+                      onClick={() => handleInteract('map')}
                     >
-                      <NavigationControl position="top-right" />
-                      <Marker 
-                        longitude={parseFloat(property.longitude)} 
-                        latitude={parseFloat(property.latitude)} 
-                        color="red"
-                      />
-                    </Map>
+                      <Map
+                        initialViewState={{
+                          longitude: parseFloat(property.longitude),
+                          latitude: parseFloat(property.latitude),
+                          zoom: 14
+                        }}
+                        mapStyle="mapbox://styles/mapbox/streets-v12"
+                        mapboxAccessToken={mapboxToken}
+                      >
+                        <NavigationControl position="top-right" />
+                        <GeolocateControl 
+                          position="top-right" 
+                          positionOptions={{ enableHighAccuracy: true }}
+                          trackUserLocation={true}
+                          showUserHeading={true}
+                        />
+                        <Marker 
+                          longitude={parseFloat(property.longitude)} 
+                          latitude={parseFloat(property.latitude)} 
+                          color="red"
+                        />
+                      </Map>
+                    </div>
+                    
+                    <Button 
+                      variant="outline" 
+                      className="w-full sm:w-auto"
+                      onClick={handleGetDirections}
+                    >
+                      <Navigation className="h-4 w-4 mr-2" />
+                      Get Directions from My Location
+                    </Button>
                   </div>
                 ) : (
                   <div className="aspect-video bg-gray-100 rounded-xl flex items-center justify-center border border-dashed">
