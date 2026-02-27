@@ -1,127 +1,148 @@
-import { 
-  Shield, 
-  CreditCard, 
-  Clock, 
-  MapPin, 
-  CheckCircle, 
-  Headphones,
-  Zap,
-  Lock
+import { useState } from 'react'
+import {
+  Search,
+  FileText,
+  Phone,
+  CreditCard,
+  Home,
+  Users,
+  BarChart3,
+  Shield,
+  ArrowRight
 } from 'lucide-react'
 
 const Features = () => {
-  const features = [
+  const [activeTab, setActiveTab] = useState('tenants')
+
+  const tenantFeatures = [
     {
-      icon: Shield,
-      title: 'Verified Listings',
-      description: 'Every property is thoroughly verified by our team to ensure accuracy and legitimacy. No fake listings, no surprises.',
-      color: 'from-green-400 to-green-600',
+      icon: Search,
+      title: 'Browse Verified Listings',
+      description: 'Explore hundreds of quality-checked properties across Nairobi, Kiambu, and Kajiado. Filter by price, location, and amenities to find your perfect match.',
+      bg: 'from-orange-200 via-rose-200 to-pink-200',
+    },
+    {
+      icon: FileText,
+      title: 'Apply Online',
+      description: 'Found a place you love? Submit your application digitally with all the required documents. No paperwork, no queues — just a smooth, contactless process.',
+      bg: 'from-violet-200 via-purple-200 to-indigo-200',
+    },
+    {
+      icon: Phone,
+      title: 'Book Site Visits',
+      description: 'Interested in seeing a property in person? Call or WhatsApp our team directly to schedule a convenient viewing at a time that works for you.',
+      bg: 'from-sky-200 via-cyan-200 to-teal-200',
     },
     {
       icon: CreditCard,
-      title: 'M-Pesa Payments',
-      description: 'Pay your rent securely using M-Pesa. Fast, convenient, and trusted by millions of Kenyans every day.',
-      color: 'from-blue-400 to-blue-600',
-    },
-    {
-      icon: Clock,
-      title: 'Quick Approval',
-      description: 'Get approved for your dream home in as little as 24 hours. Our streamlined process saves you time.',
-      color: 'from-orange-400 to-orange-600',
-    },
-    {
-      icon: MapPin,
-      title: 'Prime Locations',
-      description: 'Access properties in Kenya\'s most desirable neighborhoods, from Kilimani to Nyali and beyond.',
-      color: 'from-purple-400 to-purple-600',
-    },
-    {
-      icon: CheckCircle,
-      title: 'Quality Assured',
-      description: 'Properties meet our quality standards for safety, cleanliness, and amenities before listing.',
-      color: 'from-pink-400 to-pink-600',
-    },
-    {
-      icon: Headphones,
-      title: '24/7 Support',
-      description: 'Our dedicated support team is always ready to help you with any questions or concerns.',
-      color: 'from-cyan-400 to-cyan-600',
-    },
-    {
-      icon: Zap,
-      title: 'Instant Booking',
-      description: 'Book viewings and apply for properties instantly through our easy-to-use platform.',
-      color: 'from-yellow-400 to-yellow-600',
-    },
-    {
-      icon: Lock,
-      title: 'Secure Process',
-      description: 'Your data and transactions are protected with bank-level security encryption.',
-      color: 'from-red-400 to-red-600',
+      title: 'Pay via M-Pesa',
+      description: 'Pay your agreement fees and deposits securely through M-Pesa with instant confirmation. No cash, no bank visits — just tap and go.',
+      bg: 'from-amber-200 via-yellow-200 to-lime-200',
     },
   ]
+
+  const landlordFeatures = [
+    {
+      icon: Home,
+      title: 'List Your Property',
+      description: 'Showcase your property to thousands of verified tenants. Add photos, set your price, and let our team handle tenant inquiries for you.',
+      bg: 'from-violet-200 via-purple-200 to-indigo-200',
+    },
+    {
+      icon: Users,
+      title: 'Get Quality Tenants',
+      description: 'We verify every applicant so you don\'t have to. Receive applications from pre-screened tenants ready to move in and pay on time.',
+      bg: 'from-orange-200 via-rose-200 to-pink-200',
+    },
+    {
+      icon: BarChart3,
+      title: 'Track Performance',
+      description: 'See how your listing is performing with real-time analytics — views, likes, inquiries, and engagement stats all in your dashboard.',
+      bg: 'from-sky-200 via-cyan-200 to-teal-200',
+    },
+    {
+      icon: Shield,
+      title: 'Secure Agreements',
+      description: 'Upload tenant agreements, collect fees via M-Pesa, and manage signed documents — all handled digitally through our secure platform.',
+      bg: 'from-amber-200 via-yellow-200 to-lime-200',
+    },
+  ]
+
+  const features = activeTab === 'tenants' ? tenantFeatures : landlordFeatures
 
   return (
     <section className="py-16 lg:py-24 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-12">
           <span className="inline-block px-4 py-1.5 rounded-full bg-victor-green/10 text-victor-green text-sm font-medium mb-4">
-            Why Choose Us
+            Platform Features
           </span>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            The Victor Springs Advantage
+            Everything You Need, All in One Place
           </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            We're revolutionizing the rental experience in Kenya with cutting-edge technology, 
-            verified listings, and unmatched customer service.
+          <p className="text-gray-600 max-w-2xl mx-auto mb-8">
+            Whether you're searching for a home or listing a property, Victor Springs makes the entire process simple and secure.
           </p>
+
+          {/* Tab Toggle */}
+          <div className="inline-flex rounded-full bg-gray-100 p-1">
+            <button
+              onClick={() => setActiveTab('tenants')}
+              className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${
+                activeTab === 'tenants'
+                  ? 'bg-victor-green text-white shadow-md'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              For Tenants
+            </button>
+            <button
+              onClick={() => setActiveTab('landlords')}
+              className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${
+                activeTab === 'landlords'
+                  ? 'bg-victor-green text-white shadow-md'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              For Landlords
+            </button>
+          </div>
         </div>
 
-        {/* Features Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Feature Blocks */}
+        <div className="space-y-6">
           {features.map((feature, index) => (
             <div
               key={feature.title}
-              className="group p-6 rounded-2xl bg-gray-50 hover:bg-white hover:shadow-xl transition-all duration-300 border border-transparent hover:border-gray-100"
-              style={{ animationDelay: `${index * 50}ms` }}
+              className={`rounded-3xl bg-gradient-to-br ${feature.bg} overflow-hidden transition-all duration-500`}
             >
-              {/* Icon */}
-              <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform`}>
-                <feature.icon className="h-7 w-7 text-white" />
-              </div>
+              <div className={`flex flex-col ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} items-center gap-8 p-8 md:p-12`}>
+                {/* Icon Side */}
+                <div className="flex-shrink-0">
+                  <div className="w-28 h-28 md:w-36 md:h-36 rounded-2xl bg-white/60 backdrop-blur-sm shadow-lg flex items-center justify-center">
+                    <feature.icon className="h-14 w-14 md:h-16 md:w-16 text-gray-800" strokeWidth={1.5} />
+                  </div>
+                </div>
 
-              {/* Content */}
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                {feature.title}
-              </h3>
-              <p className="text-gray-600 text-sm leading-relaxed">
-                {feature.description}
-              </p>
+                {/* Text Side */}
+                <div className="flex-1 text-center md:text-left">
+                  <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+                    {feature.title}
+                  </h3>
+                  <p className="text-gray-700 text-base md:text-lg leading-relaxed max-w-xl">
+                    {feature.description}
+                  </p>
+                  <a
+                    href="/properties"
+                    className="inline-flex items-center gap-1.5 mt-4 text-sm font-semibold text-gray-900 hover:text-victor-green transition-colors"
+                  >
+                    Learn more <ArrowRight className="h-4 w-4" />
+                  </a>
+                </div>
+              </div>
             </div>
           ))}
-        </div>
-
-        {/* Trust Badges */}
-        <div className="mt-16 pt-12 border-t">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-3xl font-bold text-victor-green mb-1">100%</div>
-              <div className="text-sm text-gray-600">Verified Listings</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-victor-blue mb-1">24h</div>
-              <div className="text-sm text-gray-600">Average Response</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-victor-orange mb-1">0%</div>
-              <div className="text-sm text-gray-600">Hidden Fees</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-victor-purple mb-1">4.9</div>
-              <div className="text-sm text-gray-600">User Rating</div>
-            </div>
-          </div>
         </div>
       </div>
     </section>
