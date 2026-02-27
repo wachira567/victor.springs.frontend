@@ -331,12 +331,14 @@ const PropertyDetail = () => {
                 >
                   Location Map
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="agreement"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-victor-green data-[state=active]:bg-transparent px-6 py-4 outline-none focus-visible:ring-0"
-                >
-                  Tenant Agreement
-                </TabsTrigger>
+                {currentUser && hasRole('tenant') && (
+                  <TabsTrigger 
+                    value="agreement"
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-victor-green data-[state=active]:bg-transparent px-6 py-4 outline-none focus-visible:ring-0"
+                  >
+                    Tenant Agreement
+                  </TabsTrigger>
+                )}
               </TabsList>
 
               <TabsContent value="description" className="p-6">
@@ -483,23 +485,43 @@ const PropertyDetail = () => {
                   {property.tenant_agreement_url ? (
                     <div className="space-y-6">
                       <div className="bg-gray-50 rounded-xl p-6 border border-dashed border-gray-200">
-                        <div className="flex items-center justify-between mb-4">
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
                           <div className="flex items-center gap-3">
-                            <FileDown className="h-10 w-10 text-victor-green" />
+                            <div className="p-2 bg-victor-green/10 rounded-lg">
+                               <FileDown className="h-8 w-8 text-victor-green" />
+                            </div>
                             <div className="text-left">
-                              <p className="font-semibold text-gray-900">Tenancy_Agreement.pdf</p>
-                              <p className="text-xs text-gray-500">Standard Legal Document</p>
+                              <p className="font-semibold text-gray-900 break-all">Tenancy_Agreement.pdf</p>
+                              <p className="text-xs text-gray-500 uppercase">PDF Document</p>
                             </div>
                           </div>
                           <Button 
-                            onClick={() => window.open(property.tenant_agreement_url, '_blank')}
-                            className="bg-victor-green hover:bg-victor-green-dark"
+                            onClick={async () => {
+                              try {
+                                const response = await fetch(property.tenant_agreement_url);
+                                const blob = await response.blob();
+                                const url = window.URL.createObjectURL(blob);
+                                const link = document.createElement('a');
+                                link.href = url;
+                                link.setAttribute('download', 'Tenant_Agreement.pdf');
+                                document.body.appendChild(link);
+                                link.click();
+                                link.remove();
+                                window.URL.revokeObjectURL(url);
+                                toast.success("Download started");
+                              } catch (err) {
+                                console.error("Download failed:", err);
+                                window.open(property.tenant_agreement_url, '_blank');
+                              }
+                            }}
+                            className="w-full sm:w-auto bg-victor-green hover:bg-victor-green-dark"
                           >
+                            <FileDown className="h-4 w-4 mr-2" />
                             Download
                           </Button>
                         </div>
-                        <p className="text-xs text-gray-500 text-center border-t pt-4">
-                          Note: You'll need to print, sign, and scan this document back to us.
+                        <p className="text-[10px] text-gray-400 text-center border-t pt-4 italic">
+                          Document ID: {property.id}-TA-VS
                         </p>
                       </div>
 
@@ -525,15 +547,11 @@ const PropertyDetail = () => {
                           className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white"
                           disabled={isLandlordView}
                           onClick={() => {
-                            if (!currentUser) {
-                              toast.info("Please sign in to start your application.")
-                              return
-                            }
                             setShowApplicationForm(true)
                           }}
                         >
                           <Upload className="h-4 w-4 mr-2" />
-                          {currentUser ? 'Pay Fee & Upload Signed Copy' : 'Sign In to Upload'}
+                          Pay Fee & Upload Signed Copy
                         </Button>
                       </div>
                     </div>
