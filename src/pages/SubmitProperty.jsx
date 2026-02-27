@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useCallback, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -49,6 +49,10 @@ const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || ''
 const SubmitProperty = () => {
   const navigate = useNavigate()
   const { hasRole, user } = useAuth()
+  const [searchParams] = useSearchParams()
+  const editId = searchParams.get('edit')
+  const isEditMode = !!editId
+  
   const [step, setStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [uploadedImages, setUploadedImages] = useState([])
@@ -78,8 +82,50 @@ const SubmitProperty = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearching, setIsSearching] = useState(false)
 
-  // Redirect if not landlord
-  if (!hasRole(['landlord', 'super_admin'])) {
+  // Fetch property data for edit mode
+  useEffect(() => {
+    if (!editId) return
+    const fetchProperty = async () => {
+      try {
+        const token = localStorage.getItem('victorsprings_token')
+        const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
+        const res = await fetch(`${API_URL}/properties/${editId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        if (!res.ok) throw new Error('Failed to fetch property')
+        const data = await res.json()
+        const p = data.property || data
+        setFormData({
+          title: p.title || '',
+          description: p.description || '',
+          propertyType: p.property_type || '',
+          tenantAgreementFee: p.tenant_agreement_fee || '',
+          tenantAgreementFile: null,
+          city: p.city || '',
+          address: p.address || '',
+          locationDescription: p.location_description || '',
+          latitude: p.latitude || -1.2921,
+          longitude: p.longitude || 36.8219,
+          units: p.units || []
+        })
+        if (p.latitude && p.longitude) {
+          setViewState({ latitude: p.latitude, longitude: p.longitude, zoom: 14 })
+        }
+        if (p.images && p.images.length > 0) {
+          // Handle both string URLs and object format
+          const urls = p.images.map(img => typeof img === 'string' ? img : img.url || img)
+          setUploadedImages(urls)
+        }
+      } catch (error) {
+        console.error('Failed to load property for editing:', error)
+        toast.error('Failed to load property data')
+      }
+    }
+    fetchProperty()
+  }, [editId])
+
+  // Redirect if not landlord or admin
+  if (!hasRole(['landlord', 'super_admin', 'admin'])) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Card className="max-w-md">
@@ -278,8 +324,12 @@ const SubmitProperty = () => {
         submitData.append('images', file)
       })
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/properties`, {
-        method: 'POST',
+      const API_URL = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+      const url = isEditMode ? `${API_URL}/properties/${editId}` : `${API_URL}/properties`
+      const method = isEditMode ? 'PUT' : 'POST'
+
+      const response = await fetch(url, {
+        method,
         headers: {
           'Authorization': `Bearer ${token}`
         },
@@ -292,8 +342,13 @@ const SubmitProperty = () => {
         throw new Error(data.message || 'Failed to submit property')
       }
 
-      toast.success('Property submitted successfully! It will be reviewed shortly.')
-      navigate('/landlord')
+      toast.success(isEditMode ? 'Property updated successfully!' : 'Property submitted successfully!')
+      // Redirect admins back to admin properties, landlords to their dashboard
+      if (hasRole(['admin', 'super_admin'])) {
+        navigate('/admin/properties')
+      } else {
+        navigate('/landlord')
+      }
     } catch (error) {
       console.error('Submission error:', error)
       toast.error(error.message || 'Failed to submit property')
