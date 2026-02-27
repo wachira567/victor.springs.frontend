@@ -339,8 +339,7 @@ const TenantApplicationBox = ({ property, user, onClose }) => {
                     <p className="text-sm text-blue-800">Please download and sign the agreement. Upload the signed copy below.</p>
                   </div>
                   <a 
-                    href={property.tenant_agreement_url.replace('/image/upload/', '/raw/upload/')}
-                    download="Tenant_Agreement.pdf"
+                    href={property.tenant_agreement_url.replace('/upload/', '/upload/fl_attachment/')}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center shrink-0 rounded-md px-4 py-2 text-sm font-medium bg-white border border-blue-200 text-blue-700 hover:bg-blue-100 hover:text-blue-800 transition-colors"

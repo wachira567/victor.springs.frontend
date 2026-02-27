@@ -42,11 +42,11 @@ import TenantApplicationBox from '@/components/tenant/TenantApplicationBox'
 
 const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || ''
 
-// Helper: fix Cloudinary URLs that were uploaded with resource_type='auto' (image) instead of 'raw'
-const fixCloudinaryPdfUrl = (url) => {
+// Helper: transform Cloudinary URL to force download via fl_attachment flag
+const getCloudinaryDownloadUrl = (url) => {
   if (!url) return url
-  // Convert /image/upload/ to /raw/upload/ for PDFs
-  return url.replace('/image/upload/', '/raw/upload/')
+  // Insert fl_attachment after /upload/ to force browser download
+  return url.replace('/upload/', '/upload/fl_attachment/')
 }
 
 const PropertyDetail = () => {
@@ -313,37 +313,37 @@ const PropertyDetail = () => {
 
             {/* Tabs */}
             <Tabs defaultValue="description" className="bg-white rounded-xl shadow-sm">
-              <TabsList className="w-full justify-start rounded-t-xl border-b bg-transparent p-0">
+              <TabsList className="w-full justify-start rounded-t-xl border-b bg-transparent p-0 overflow-x-auto flex-nowrap">
                 <TabsTrigger 
                   value="description" 
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-victor-green data-[state=active]:bg-transparent px-6 py-4 outline-none focus-visible:ring-0"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-victor-green data-[state=active]:bg-transparent px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm outline-none focus-visible:ring-0 whitespace-nowrap"
                 >
                   Description
                 </TabsTrigger>
                 <TabsTrigger 
                   value="units"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-victor-green data-[state=active]:bg-transparent px-6 py-4 outline-none focus-visible:ring-0"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-victor-green data-[state=active]:bg-transparent px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm outline-none focus-visible:ring-0 whitespace-nowrap"
                 >
-                  Available Units
+                  Units
                 </TabsTrigger>
                 <TabsTrigger 
                   value="amenities"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-victor-green data-[state=active]:bg-transparent px-6 py-4 outline-none focus-visible:ring-0"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-victor-green data-[state=active]:bg-transparent px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm outline-none focus-visible:ring-0 whitespace-nowrap"
                 >
-                  Building Features
+                  Features
                 </TabsTrigger>
                 <TabsTrigger 
                   value="location"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-victor-green data-[state=active]:bg-transparent px-6 py-4 outline-none focus-visible:ring-0"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-victor-green data-[state=active]:bg-transparent px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm outline-none focus-visible:ring-0 whitespace-nowrap"
                 >
-                  Location Map
+                  Location
                 </TabsTrigger>
                 {currentUser && hasRole('tenant') && (
                   <TabsTrigger 
                     value="agreement"
-                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-victor-green data-[state=active]:bg-transparent px-6 py-4 outline-none focus-visible:ring-0"
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-victor-green data-[state=active]:bg-transparent px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm outline-none focus-visible:ring-0 whitespace-nowrap"
                   >
-                    Tenant Agreement
+                    Agreement
                   </TabsTrigger>
                 )}
               </TabsList>
@@ -503,8 +503,7 @@ const PropertyDetail = () => {
                             </div>
                           </div>
                           <a
-                            href={fixCloudinaryPdfUrl(property.tenant_agreement_url)}
-                            download="Tenant_Agreement.pdf"
+                            href={getCloudinaryDownloadUrl(property.tenant_agreement_url)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center justify-center w-full sm:w-auto rounded-md px-4 py-2 text-sm font-medium bg-victor-green text-white hover:bg-victor-green-dark transition-colors"
