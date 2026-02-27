@@ -16,7 +16,8 @@ import {
   BarChart3,
   Settings,
   ClipboardList,
-  User
+  User,
+  CreditCard
 } from 'lucide-react'
 
 const AdminLayout = () => {
