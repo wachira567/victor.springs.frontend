@@ -28,6 +28,29 @@ const LandlordDashboard = () => {
   const navigate = useNavigate()
   const { user, hasRole, isLoading: isAuthLoading } = useAuth()
   const [activeTab, setActiveTab] = useState('overview')
+  const [myProperties, setMyProperties] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
+
+  useEffect(() => {
+    const fetchMyProperties = async () => {
+      try {
+        const token = localStorage.getItem('victorsprings_token')
+        const response = await axios.get(`${API_URL}/properties/my-properties`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        setMyProperties(response.data.properties || [])
+      } catch (error) {
+        console.error('Error fetching landlord properties:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    if (!isAuthLoading && user) {
+      fetchMyProperties()
+    }
+  }, [isAuthLoading, user, API_URL])
 
   if (isAuthLoading) {
     return (
@@ -56,27 +79,6 @@ const LandlordDashboard = () => {
       </div>
     )
   }
-
-  const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
-  const [myProperties, setMyProperties] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    const fetchMyProperties = async () => {
-      try {
-        const token = localStorage.getItem('victorsprings_token')
-        const response = await axios.get(`${API_URL}/properties/my-properties`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        setMyProperties(response.data.properties || [])
-      } catch (error) {
-        console.error('Error fetching landlord properties:', error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    fetchMyProperties()
-  }, [])
 
   const stats = {
     totalProperties: myProperties.length,
