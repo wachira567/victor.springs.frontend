@@ -18,172 +18,146 @@ const Features = () => {
     {
       icon: Search,
       title: 'Browse Verified Listings',
-      description: 'Explore hundreds of quality-checked properties across Nairobi, Kiambu, and Kajiado. Filter by price, location, and amenities to find your perfect match.',
-      gradient: 'from-rose-400/80 to-orange-300/80',
-      iconBg: 'bg-rose-500',
-      decorColor: 'bg-orange-200',
+      description: 'Explore hundreds of quality-checked properties across Nairobi, Kiambu, and Kajiado. Filter by price, location, and amenities to find your perfect match. Every listing is verified by our team so you can browse with confidence.',
     },
     {
       icon: FileText,
       title: 'Apply Online',
-      description: 'Found a place you love? Submit your application digitally with all the required documents. No paperwork, no queues — just a smooth, contactless process.',
-      gradient: 'from-violet-400/80 to-purple-300/80',
-      iconBg: 'bg-violet-500',
-      decorColor: 'bg-purple-200',
+      description: 'Found a place you love? The next step in your rental journey is to apply online. Submit your documents, ID, and details digitally. It\'s contactless, easy, and fast — all you need to ensure your home will not flee while you\'re occupied with paperwork!',
     },
     {
       icon: Phone,
       title: 'Book Site Visits',
-      description: 'Interested in seeing a property in person? Call or WhatsApp our team directly to schedule a convenient viewing at a time that works for you.',
-      gradient: 'from-cyan-400/80 to-sky-300/80',
-      iconBg: 'bg-cyan-500',
-      decorColor: 'bg-sky-200',
+      description: 'Found a perfect place and want to see it in real life? Call or WhatsApp our team to arrange a tour and make sure the property matches the photos. Simply pick a date and preferred time and we\'ll help you schedule your visit.',
     },
     {
       icon: CreditCard,
       title: 'Pay via M-Pesa',
-      description: 'Pay your agreement fees and deposits securely through M-Pesa with instant confirmation. No cash, no bank visits — just tap and go.',
-      gradient: 'from-emerald-400/80 to-teal-300/80',
-      iconBg: 'bg-emerald-500',
-      decorColor: 'bg-teal-200',
+      description: 'Cash payments are yesterday. Pay your agreement fees and deposits digitally in mere minutes thanks to our M-Pesa integration! Enjoy instant confirmation, full payment history records, and more, all backed by world-class digital security.',
     },
   ]
 
   const landlordFeatures = [
     {
       icon: Home,
-      title: 'List Your Property',
-      description: 'Showcase your property to thousands of verified tenants. Add photos, set your price, and let our team handle tenant inquiries for you.',
-      gradient: 'from-violet-400/80 to-purple-300/80',
-      iconBg: 'bg-violet-500',
-      decorColor: 'bg-purple-200',
+      title: 'List a Property',
+      description: 'Time to showcase your property! Add quality photos, set your price, pick amenities, and craft a compelling description. Our platform makes it easy to create a listing that attracts quality tenants within 24 hours.',
     },
     {
       icon: Users,
       title: 'Get Quality Tenants',
-      description: 'We verify every applicant so you don\'t have to. Receive applications from pre-screened tenants ready to move in and pay on time.',
-      gradient: 'from-rose-400/80 to-orange-300/80',
-      iconBg: 'bg-rose-500',
-      decorColor: 'bg-orange-200',
+      description: 'We verify every applicant so you don\'t have to. Receive applications from pre-screened tenants ready to move in and pay on time. Review their details, documents, and approve or decline with one click.',
     },
     {
       icon: BarChart3,
       title: 'Track Performance',
-      description: 'See how your listing is performing with real-time analytics — views, likes, inquiries, and engagement stats all in your dashboard.',
-      gradient: 'from-cyan-400/80 to-sky-300/80',
-      iconBg: 'bg-cyan-500',
-      decorColor: 'bg-sky-200',
+      description: 'See how your listing is performing with real-time analytics. Track views, likes, WhatsApp clicks, call inquiries, and engagement stats — all in your dashboard. Know exactly which properties tenants love most.',
     },
     {
       icon: Shield,
       title: 'Secure Agreements',
-      description: 'Upload tenant agreements, collect fees via M-Pesa, and manage signed documents — all handled digitally through our secure platform.',
-      gradient: 'from-emerald-400/80 to-teal-300/80',
-      iconBg: 'bg-emerald-500',
-      decorColor: 'bg-teal-200',
+      description: 'Upload tenant agreements, collect fees via M-Pesa, and manage signed documents — all handled digitally through our secure platform. No need to run across town to sign a paper contract.',
     },
   ]
 
   const features = activeTab === 'tenants' ? tenantFeatures : landlordFeatures
 
+  // Alternating warm gradients like Rentberry
+  const gradients = [
+    'from-[#fdc9a6] via-[#f9b4a0] to-[#f7a199]', // warm peach/salmon
+    'from-[#d4bcf7] via-[#c5a8f5] to-[#b694f0]', // soft purple/lavender
+    'from-[#fdc9a6] via-[#f9b4a0] to-[#f7a199]', // warm peach/salmon
+    'from-[#d4bcf7] via-[#c5a8f5] to-[#b694f0]', // soft purple/lavender
+  ]
+
   return (
-    <section className="py-16 lg:py-24 bg-gray-50">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="text-center mb-14">
-          <span className="inline-block px-4 py-1.5 rounded-full bg-victor-green/10 text-victor-green text-sm font-medium mb-4">
-            Platform Features
-          </span>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Everything You Need, All in One Place
-          </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto mb-8">
-            Whether you're searching for a home or listing a property, Victor Springs makes the entire process simple and secure.
-          </p>
-
-          {/* Tab Toggle */}
-          <div className="inline-flex rounded-full bg-gray-900 p-1.5 shadow-xl">
-            <button
-              onClick={() => setActiveTab('tenants')}
-              className={`px-8 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${
-                activeTab === 'tenants'
-                  ? 'bg-white text-gray-900 shadow-md'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              For Tenants
-            </button>
-            <button
-              onClick={() => setActiveTab('landlords')}
-              className={`px-8 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${
-                activeTab === 'landlords'
-                  ? 'bg-white text-gray-900 shadow-md'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              For Landlords
-            </button>
-          </div>
+    <section className="relative">
+      {/* Sticky Tab Toggle */}
+      <div className="sticky top-16 z-30 flex justify-center py-6">
+        <div className="inline-flex rounded-full bg-gray-800 p-1.5 shadow-2xl">
+          <button
+            onClick={() => setActiveTab('tenants')}
+            className={`px-8 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${
+              activeTab === 'tenants'
+                ? 'bg-white text-gray-900 shadow-lg'
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            For Tenants
+          </button>
+          <button
+            onClick={() => setActiveTab('landlords')}
+            className={`px-8 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${
+              activeTab === 'landlords'
+                ? 'bg-white text-gray-900 shadow-lg'
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            For Landlords
+          </button>
         </div>
+      </div>
 
-        {/* Feature Blocks */}
-        <div className="space-y-8">
-          {features.map((feature, index) => {
-            const isReversed = index % 2 !== 0
-            const stepNumber = String(index + 1).padStart(2, '0')
+      {/* Feature Sections — full-bleed, no gaps */}
+      {features.map((feature, index) => {
+        const isReversed = index % 2 !== 0
+        return (
+          <div
+            key={feature.title}
+            className={`bg-gradient-to-br ${gradients[index]} transition-all duration-500`}
+          >
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+              <div className={`flex flex-col ${isReversed ? 'md:flex-row-reverse' : 'md:flex-row'} items-center gap-10 md:gap-16 py-16 md:py-24`}>
 
-            return (
-              <div
-                key={feature.title}
-                className="group relative rounded-[2rem] overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-500"
-              >
-                {/* Gradient Background */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient}`} />
-
-                {/* Decorative Circle */}
-                <div className={`absolute ${isReversed ? '-left-20 -bottom-20' : '-right-20 -top-20'} w-72 h-72 rounded-full ${feature.decorColor} opacity-40 blur-2xl`} />
-                <div className={`absolute ${isReversed ? '-right-10 -top-10' : '-left-10 -bottom-10'} w-48 h-48 rounded-full ${feature.decorColor} opacity-30 blur-xl`} />
-
-                {/* Content */}
-                <div className={`relative flex flex-col ${isReversed ? 'md:flex-row-reverse' : 'md:flex-row'} items-center gap-10 p-8 md:p-14`}>
-
-                  {/* Icon Card */}
-                  <div className="flex-shrink-0">
-                    <div className="relative">
-                      {/* Step Number */}
-                      <div className="absolute -top-3 -left-3 w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center z-10">
-                        <span className="text-sm font-bold text-gray-900">{stepNumber}</span>
-                      </div>
-                      {/* Icon Container */}
-                      <div className="w-32 h-32 md:w-40 md:h-40 rounded-3xl bg-white/80 backdrop-blur-md shadow-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
-                        <div className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl ${feature.iconBg} flex items-center justify-center shadow-lg`}>
-                          <feature.icon className="h-10 w-10 md:h-12 md:w-12 text-white" strokeWidth={1.5} />
+                {/* Card / Icon Side */}
+                <div className="flex-shrink-0 w-full md:w-[380px]">
+                  <div className="relative mx-auto w-fit">
+                    {/* Main Card */}
+                    <div className="bg-white rounded-2xl shadow-2xl p-8 w-[280px] md:w-[320px]">
+                      <div className="flex items-center justify-center mb-5">
+                        <div className="w-20 h-20 rounded-2xl bg-gray-100 flex items-center justify-center">
+                          <feature.icon className="h-10 w-10 text-gray-700" strokeWidth={1.5} />
                         </div>
+                      </div>
+                      <h4 className="text-center text-lg font-bold text-gray-900 mb-2">{feature.title}</h4>
+                      <div className="flex justify-center gap-1 mt-3">
+                        {[...Array(3)].map((_, i) => (
+                          <div key={i} className="w-2 h-2 rounded-full bg-gray-300" />
+                        ))}
+                      </div>
+                    </div>
+                    {/* Floating accent card */}
+                    <div className={`absolute ${isReversed ? '-left-6' : '-right-6'} -bottom-4 bg-white rounded-xl shadow-lg px-4 py-3`}>
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                          <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                        </div>
+                        <span className="text-sm font-medium text-gray-700">Victor Springs</span>
                       </div>
                     </div>
                   </div>
+                </div>
 
-                  {/* Text Side */}
-                  <div className={`flex-1 text-center ${isReversed ? 'md:text-right' : 'md:text-left'}`}>
-                    <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-4 drop-shadow-sm">
-                      {feature.title}
-                    </h3>
-                    <p className="text-white/90 text-base md:text-lg leading-relaxed max-w-lg" style={{ marginLeft: isReversed ? 'auto' : undefined }}>
-                      {feature.description}
-                    </p>
-                    <a
-                      href="/properties"
-                      className={`inline-flex items-center gap-2 mt-6 px-5 py-2.5 rounded-full bg-white/20 backdrop-blur-sm text-white text-sm font-semibold hover:bg-white/30 transition-colors border border-white/30`}
-                    >
-                      Learn more <ArrowRight className="h-4 w-4" />
-                    </a>
-                  </div>
+                {/* Text Side */}
+                <div className={`flex-1 ${isReversed ? 'md:text-right' : 'md:text-left'} text-center`}>
+                  <h3 className="text-3xl md:text-4xl lg:text-[2.75rem] font-bold text-gray-800 mb-5 leading-tight">
+                    {feature.title}
+                  </h3>
+                  <p className="text-gray-700/80 text-base md:text-lg leading-relaxed max-w-lg" style={{ marginLeft: isReversed ? 'auto' : undefined }}>
+                    {feature.description}
+                  </p>
+                  <a
+                    href="/properties"
+                    className="inline-flex items-center gap-1.5 mt-6 text-base font-semibold text-gray-800 hover:text-gray-600 transition-colors"
+                  >
+                    Learn more <ArrowRight className="h-4 w-4" />
+                  </a>
                 </div>
               </div>
-            )
-          })}
-        </div>
-      </div>
+            </div>
+          </div>
+        )
+      })}
     </section>
   )
 }
