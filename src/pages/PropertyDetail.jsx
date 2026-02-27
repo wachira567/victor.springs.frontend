@@ -44,6 +44,7 @@ const PropertyDetail = () => {
   const [isFavorite, setIsFavorite] = useState(false)
   const [selectedImage, setSelectedImage] = useState(0)
   const [showApplicationForm, setShowApplicationForm] = useState(false)
+  const isLandlordView = hasRole(['landlord', 'admin', 'super_admin'])
 
   // Settings State
   const [globalPhone, setGlobalPhone] = useState('')
