@@ -79,27 +79,88 @@ const Properties = () => {
     if (allProperties.length === 0) return
     let result = [...allProperties]
 
+    // Location filter
     if (filters.location) {
+      const loc = filters.location.toLowerCase()
       result = result.filter(p => 
-        (p.city && p.city.toLowerCase().includes(filters.location.toLowerCase())) ||
-        (p.address && p.address.toLowerCase().includes(filters.location.toLowerCase()))
+        (p.city && p.city.toLowerCase().includes(loc)) ||
+        (p.address && p.address.toLowerCase().includes(loc)) ||
+        (p.title && p.title.toLowerCase().includes(loc))
       )
     }
 
+    // Property (House) Type filter
     if (filters.type && filters.type !== 'all') {
-      result = result.filter(p => p.property_type === filters.type)
+      result = result.filter(p => p.property_type && p.property_type.toLowerCase() === filters.type.toLowerCase())
     }
 
-    result = result.filter(p => 
-      p.price >= filters.minPrice && p.price <= filters.maxPrice
-    )
+    // Price filter (checks both property-level price and unit-level prices)
+    result = result.filter(p => {
+      const minP = filters.minPrice
+      const maxP = filters.maxPrice
+      
+      // If property has units, check if ANY unit is within range
+      if (p.units && p.units.length > 0) {
+        return p.units.some(u => {
+          const uPrice = parseFloat(u.price) || 0
+          return uPrice >= minP && uPrice <= maxP
+        })
+      }
+      
+      // Fallback to property-level price
+      const pPrice = parseFloat(p.price) || 0
+      return pPrice >= minP && pPrice <= maxP
+    })
 
+    // Bedrooms filter
     if (filters.bedrooms.length > 0) {
-      result = result.filter(p => filters.bedrooms.includes(String(p.bedrooms)))
+      result = result.filter(p => {
+        // If property has units, check if ANY unit matches
+        if (p.units && p.units.length > 0) {
+          return p.units.some(u => {
+            const br = String(u.bedrooms)
+            return filters.bedrooms.includes(br) || (br >= 5 && filters.bedrooms.includes('5+'))
+          })
+        }
+        // Fallback to property-level
+        const pBr = String(p.bedrooms)
+        return filters.bedrooms.includes(pBr) || (pBr >= 5 && filters.bedrooms.includes('5+'))
+      })
+    }
+
+    // Bathrooms filter
+    if (filters.bathrooms.length > 0) {
+      result = result.filter(p => {
+        if (p.units && p.units.length > 0) {
+          return p.units.some(u => filters.bathrooms.includes(String(u.bathrooms)))
+        }
+        return filters.bathrooms.includes(String(p.bathrooms))
+      })
+    }
+
+    // Amenities filter (AND logic - must have all selected amenities)
+    if (filters.amenities.length > 0) {
+      result = result.filter(p => {
+        // Check property-level amenities
+        const propAmenities = p.amenities || []
+        
+        // Check if ANY part of the property (main or any unit) has each selected amenity
+        return filters.amenities.every(selectedAmenity => {
+          // Check if property has it
+          if (propAmenities.includes(selectedAmenity)) return true
+          
+          // Check if any unit has it
+          if (p.units && p.units.length > 0) {
+            return p.units.some(u => (u.amenities || []).includes(selectedAmenity))
+          }
+          
+          return false
+        })
+      })
     }
 
     setFilteredProperties(result)
-  }, [filters])
+  }, [filters, allProperties])
 
   const clearFilters = () => {
     setFilters({
@@ -144,8 +205,10 @@ const Properties = () => {
             <SelectItem value="all">All Types</SelectItem>
             <SelectItem value="Apartment">Apartment</SelectItem>
             <SelectItem value="House">House</SelectItem>
-            <SelectItem value="Studio">Studio</SelectItem>
             <SelectItem value="Villa">Villa</SelectItem>
+            <SelectItem value="Studio">Studio</SelectItem>
+            <SelectItem value="Condo">Condo</SelectItem>
+            <SelectItem value="Townhouse">Townhouse</SelectItem>
             <SelectItem value="Office">Office</SelectItem>
           </SelectContent>
         </Select>
@@ -166,10 +229,10 @@ const Properties = () => {
 
       {/* Bedrooms */}
       <div>
-        <Label className="text-sm font-medium mb-3 block">Bedrooms</Label>
-        <div className="flex flex-wrap gap-2">
+        <Label className="text-sm font-medium mb-3 block">Unit Type (Bedrooms)</Label>
+        <div className="grid grid-cols-2 gap-2">
           {['0', '1', '2', '3', '4', '5+'].map((num) => (
-            <label key={num} className="flex items-center space-x-2">
+            <label key={num} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors">
               <Checkbox
                 checked={filters.bedrooms.includes(num)}
                 onCheckedChange={(checked) => {
@@ -189,26 +252,59 @@ const Properties = () => {
         </div>
       </div>
 
-      {/* Amenities */}
+      {/* Bathrooms */}
       <div>
-        <Label className="text-sm font-medium mb-3 block">Amenities</Label>
-        <div className="space-y-2">
-          {['Parking', 'Gym', 'Pool', 'Security', 'Garden', 'Pet Friendly'].map((amenity) => (
-            <label key={amenity} className="flex items-center space-x-2">
+        <Label className="text-sm font-medium mb-3 block">Bathrooms</Label>
+        <div className="grid grid-cols-3 gap-2">
+          {['1', '2', '3', '4+'].map((num) => (
+            <label key={num} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors">
               <Checkbox
-                checked={filters.amenities.includes(amenity)}
+                checked={filters.bathrooms.includes(num)}
                 onCheckedChange={(checked) => {
                   if (checked) {
-                    setFilters({ ...filters, amenities: [...filters.amenities, amenity] })
+                    setFilters({ ...filters, bathrooms: [...filters.bathrooms, num] })
                   } else {
                     setFilters({ 
                       ...filters, 
-                      amenities: filters.amenities.filter(a => a !== amenity) 
+                      bathrooms: filters.bathrooms.filter(b => b !== num) 
                     })
                   }
                 }}
               />
-              <span className="text-sm">{amenity}</span>
+              <span className="text-sm">{num}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Amenities */}
+      <div>
+        <Label className="text-sm font-medium mb-3 block">Amenities</Label>
+        <div className="grid grid-cols-1 gap-2">
+          {[
+            { id: 'parking', label: 'Parking' },
+            { id: 'pool', label: 'Swimming Pool' },
+            { id: 'gym', label: 'Gym' },
+            { id: 'security', label: '24/7 Security' },
+            { id: 'petFriendly', label: 'Pet Friendly' },
+            { id: 'garden', label: 'Garden' },
+            { id: 'wifi', label: 'WiFi Ready' }
+          ].map((amenity) => (
+            <label key={amenity.id} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors">
+              <Checkbox
+                checked={filters.amenities.includes(amenity.id)}
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    setFilters({ ...filters, amenities: [...filters.amenities, amenity.id] })
+                  } else {
+                    setFilters({ 
+                      ...filters, 
+                      amenities: filters.amenities.filter(a => a !== amenity.id) 
+                    })
+                  }
+                }}
+              />
+              <span className="text-sm">{amenity.label}</span>
             </label>
           ))}
         </div>
