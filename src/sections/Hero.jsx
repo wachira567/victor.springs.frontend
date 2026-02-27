@@ -37,16 +37,13 @@ const Hero = () => {
 
   return (
     <section className="relative min-h-[600px] lg:min-h-[700px] flex items-center">
-      {/* Background Gradient */}
-      <div className="absolute inset-0 hero-gradient" />
-      
-      {/* Pattern Overlay */}
-      <div 
-        className="absolute inset-0 opacity-10"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-        }}
+      {/* Background Image */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url("https://res.cloudinary.com/dtbe44muv/image/upload/v1772186997/VictorspringsHomepage_vu2wjw.jpg")` }}
       />
+      {/* Dark Overlay for readability */}
+      <div className="absolute inset-0 bg-black/50" />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-16 lg:py-24">
         <div className="max-w-3xl mx-auto text-center">
