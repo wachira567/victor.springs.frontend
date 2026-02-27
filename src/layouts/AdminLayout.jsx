@@ -40,6 +40,7 @@ const AdminLayout = () => {
     { icon: Users, label: 'Users', path: '/admin/users' },
     { icon: Building2, label: 'Properties', path: '/admin/properties' },
     { icon: FileText, label: 'Applications', path: '/admin/applications' },
+    { icon: CreditCard, label: 'Payments', path: '/admin/payments' },
     { icon: ClipboardList, label: 'Tenants Directory', path: '/admin/tenants' },
     { icon: ShieldCheck, label: 'KYC', path: '/admin/kyc' },
     { icon: BarChart3, label: 'Reports', path: '/admin/reports' },

@@ -16,6 +16,7 @@ import AdminReports from './pages/admin/AdminReports'
 import AdminSettings from './pages/admin/AdminSettings'
 import AdminApplications from './pages/admin/AdminApplications'
 import AdminTenants from './pages/admin/AdminTenants'
+import AdminPayments from './pages/admin/AdminPayments'
 import AdminProfile from './pages/admin/AdminProfile'
 import LandlordDashboard from './pages/LandlordDashboard'
 import SubmitProperty from './pages/SubmitProperty'
@@ -85,6 +86,7 @@ function App() {
             <Route path="users" element={<AdminUsers />} />
             <Route path="properties" element={<AdminProperties />} />
             <Route path="applications" element={<AdminApplications />} />
+            <Route path="payments" element={<AdminPayments />} />
             <Route path="tenants" element={<AdminTenants />} />
             <Route path="kyc" element={<AdminKyc />} />
             <Route path="reports" element={<AdminReports />} />
