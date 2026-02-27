@@ -27,6 +27,9 @@ const TenantApplicationBox = ({ property, user, onClose }) => {
     mpesaPhone: user?.phone === 'Not Provided' ? '' : (user?.phone || '')
   })
   const [paymentId, setPaymentId] = useState(null)
+  // Image previews for ID documents
+  const [idFrontPreview, setIdFrontPreview] = useState(null)
+  const [idBackPreview, setIdBackPreview] = useState(null)
 
   const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
   const token = localStorage.getItem('victorsprings_token')
@@ -40,7 +43,23 @@ const TenantApplicationBox = ({ property, user, onClose }) => {
   }
 
   const handleFileChange = (e, name) => {
-    setFormData(prev => ({ ...prev, [name]: e.target.files[0] }))
+    const file = e.target.files[0]
+    if (!file) return
+    setFormData(prev => ({ ...prev, [name]: file }))
+    // Generate preview URLs for ID images
+    if (name === 'idDocumentFront') {
+      if (idFrontPreview) URL.revokeObjectURL(idFrontPreview)
+      setIdFrontPreview(URL.createObjectURL(file))
+    } else if (name === 'idDocumentBack') {
+      if (idBackPreview) URL.revokeObjectURL(idBackPreview)
+      setIdBackPreview(URL.createObjectURL(file))
+    }
+  }
+
+  const removeFile = (name) => {
+    setFormData(prev => ({ ...prev, [name]: null }))
+    if (name === 'idDocumentFront') { if (idFrontPreview) URL.revokeObjectURL(idFrontPreview); setIdFrontPreview(null) }
+    if (name === 'idDocumentBack') { if (idBackPreview) URL.revokeObjectURL(idBackPreview); setIdBackPreview(null) }
   }
 
   const initiatePayment = async () => {
@@ -370,27 +389,56 @@ const TenantApplicationBox = ({ property, user, onClose }) => {
               <div className="space-y-4 pt-4 border-t">
                 <h4 className="font-semibold text-gray-900">Step 2: Upload Documents</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* ID Front */}
                   <div>
                     <Label className="text-xs font-semibold mb-2 block text-gray-600">ID / Passport (Front) *</Label>
-                    <div className="border border-dashed rounded bg-gray-50 p-3 text-center cursor-pointer relative overflow-hidden h-24 flex items-center justify-center">
-                      <Input type="file" onChange={(e) => handleFileChange(e, 'idDocumentFront')} className="absolute inset-0 opacity-0 cursor-pointer" accept="image/*,.pdf" />
-                      {formData.idDocumentFront ? (
-                        <span className="text-sm font-medium text-victor-green line-clamp-2">{formData.idDocumentFront.name}</span>
-                      ) : (
-                         <div className="text-gray-400"><Upload className="mx-auto h-5 w-5 mb-1"/> Upload Front</div>
-                      )}
-                    </div>
+                    {idFrontPreview ? (
+                      <div className="relative rounded-lg overflow-hidden border border-victor-green">
+                        <img src={idFrontPreview} alt="ID Front" className="w-full h-32 object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => removeFile('idDocumentFront')}
+                          className="absolute top-1.5 right-1.5 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors shadow"
+                          title="Remove and re-upload"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs py-1 px-2 truncate">
+                          {formData.idDocumentFront?.name}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="border border-dashed rounded bg-gray-50 p-3 text-center cursor-pointer relative overflow-hidden h-24 flex items-center justify-center hover:border-victor-green transition-colors">
+                        <Input type="file" onChange={(e) => handleFileChange(e, 'idDocumentFront')} className="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" />
+                        <div className="text-gray-400"><Upload className="mx-auto h-5 w-5 mb-1" />Upload Front</div>
+                      </div>
+                    )}
                   </div>
+
+                  {/* ID Back */}
                   <div>
                     <Label className="text-xs font-semibold mb-2 block text-gray-600">ID / Passport (Back) *</Label>
-                    <div className="border border-dashed rounded bg-gray-50 p-3 text-center cursor-pointer relative overflow-hidden h-24 flex items-center justify-center">
-                      <Input type="file" onChange={(e) => handleFileChange(e, 'idDocumentBack')} className="absolute inset-0 opacity-0 cursor-pointer" accept="image/*,.pdf" />
-                      {formData.idDocumentBack ? (
-                        <span className="text-sm font-medium text-victor-green line-clamp-2">{formData.idDocumentBack.name}</span>
-                      ) : (
-                         <div className="text-gray-400"><Upload className="mx-auto h-5 w-5 mb-1"/> Upload Back</div>
-                      )}
-                    </div>
+                    {idBackPreview ? (
+                      <div className="relative rounded-lg overflow-hidden border border-victor-green">
+                        <img src={idBackPreview} alt="ID Back" className="w-full h-32 object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => removeFile('idDocumentBack')}
+                          className="absolute top-1.5 right-1.5 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors shadow"
+                          title="Remove and re-upload"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs py-1 px-2 truncate">
+                          {formData.idDocumentBack?.name}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="border border-dashed rounded bg-gray-50 p-3 text-center cursor-pointer relative overflow-hidden h-24 flex items-center justify-center hover:border-victor-green transition-colors">
+                        <Input type="file" onChange={(e) => handleFileChange(e, 'idDocumentBack')} className="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" />
+                        <div className="text-gray-400"><Upload className="mx-auto h-5 w-5 mb-1" />Upload Back</div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
