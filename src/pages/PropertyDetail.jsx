@@ -286,7 +286,10 @@ const PropertyDetail = () => {
                 {property.units && property.units.length > 0 ? (
                   <div className="flex items-center gap-2">
                     <Bed className="h-5 w-5 text-gray-400" />
-                    <span className="font-medium">{property.units.length} Unit Types Available</span>
+                    <span className="font-medium">
+                      {property.units.reduce((sum, u) => sum + (u.vacantCount || 0), 0)} Vacant Unit{property.units.reduce((sum, u) => sum + (u.vacantCount || 0), 0) !== 1 ? 's' : ''} 
+                      <span className="text-gray-400 font-normal">across {property.units.length} type{property.units.length !== 1 ? 's' : ''}</span>
+                    </span>
                   </div>
                 ) : (
                   <>
@@ -366,14 +369,22 @@ const PropertyDetail = () => {
               <TabsContent value="units" className="p-6">
                 {property.units && property.units.length > 0 ? (
                   <div className="space-y-4">
-                    {property.units.map((unit, idx) => (
-                      <div key={idx} className="border rounded-xl p-5 hover:border-victor-green transition-colors bg-white shadow-sm">
+                    {property.units.map((unit, idx) => {
+                      const isOccupied = (unit.vacantCount || 0) <= 0
+                      return (
+                      <div key={idx} className={`border rounded-xl p-5 transition-colors shadow-sm ${isOccupied ? 'bg-gray-50 border-gray-200 opacity-70' : 'hover:border-victor-green bg-white'}`}>
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                           <div>
                             <h3 className="font-bold text-xl text-gray-900">{unit.type}</h3>
-                            <p className="text-sm font-medium text-victor-green bg-victor-green/10 inline-flex px-2 py-0.5 rounded mt-1">
-                              {unit.vacantCount} vacant unit{unit.vacantCount !== 1 ? 's' : ''} available
-                            </p>
+                            {isOccupied ? (
+                              <p className="text-sm font-medium text-red-600 bg-red-50 inline-flex px-2 py-0.5 rounded mt-1">
+                                Fully Occupied
+                              </p>
+                            ) : (
+                              <p className="text-sm font-medium text-victor-green bg-victor-green/10 inline-flex px-2 py-0.5 rounded mt-1">
+                                {unit.vacantCount} vacant unit{unit.vacantCount !== 1 ? 's' : ''} available
+                              </p>
+                            )}
                           </div>
                           <div className="text-left sm:text-right">
                             <span className="font-bold text-2xl text-gray-900">{formatPrice(unit.price)}</span>
@@ -397,7 +408,8 @@ const PropertyDetail = () => {
                           </div>
                         )}
                       </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 ) : (
                   <p className="text-gray-500 italic">This property does not have distinct units defined. It is rented as a whole.</p>
