@@ -42,7 +42,17 @@ const MarketingRoute = ({ children }) => {
   if (isAuthenticated) {
     if (user?.role === 'super_admin' || user?.role === 'admin') return <Navigate to="/admin" replace />
     if (user?.role === 'landlord') return <Navigate to="/landlord" replace />
-    // Tenants can access marketing pages (Home, About, Contact)
+    // Tenants can access the Home page
+  }
+  return children
+}
+
+const GuestOnlyRoute = ({ children }) => {
+  const { user, isAuthenticated } = useAuth()
+  if (isAuthenticated) {
+    if (user?.role === 'super_admin' || user?.role === 'admin') return <Navigate to="/admin" replace />
+    if (user?.role === 'landlord') return <Navigate to="/landlord" replace />
+    return <Navigate to="/properties" replace />
   }
   return children
 }
@@ -84,18 +94,18 @@ function App() {
           {/* Public Routes with Navbar & Footer */}
           <Route element={<PublicLayout />}>
             <Route path="/" element={<MarketingRoute><Home /></MarketingRoute>} />
-            <Route path="/about" element={<MarketingRoute><About /></MarketingRoute>} />
-            <Route path="/contact" element={<MarketingRoute><Contact /></MarketingRoute>} />
+            <Route path="/about" element={<GuestOnlyRoute><About /></GuestOnlyRoute>} />
+            <Route path="/contact" element={<GuestOnlyRoute><Contact /></GuestOnlyRoute>} />
             
             <Route path="/properties" element={<StandardPageRoute><Properties /></StandardPageRoute>} />
             <Route path="/properties/:id" element={<StandardPageRoute><PropertyDetail /></StandardPageRoute>} />
             <Route path="/dashboard" element={<StandardPageRoute><Dashboard /></StandardPageRoute>} />
             
-            <Route path="/login" element={<MarketingRoute><Login /></MarketingRoute>} />
-            <Route path="/register" element={<MarketingRoute><Register /></MarketingRoute>} />
-            <Route path="/verify-email" element={<MarketingRoute><VerifyEmail /></MarketingRoute>} />
-            <Route path="/forgot-password" element={<MarketingRoute><ForgotPassword /></MarketingRoute>} />
-            <Route path="/reset-password" element={<MarketingRoute><ResetPassword /></MarketingRoute>} />
+            <Route path="/login" element={<GuestOnlyRoute><Login /></GuestOnlyRoute>} />
+            <Route path="/register" element={<GuestOnlyRoute><Register /></GuestOnlyRoute>} />
+            <Route path="/verify-email" element={<GuestOnlyRoute><VerifyEmail /></GuestOnlyRoute>} />
+            <Route path="/forgot-password" element={<GuestOnlyRoute><ForgotPassword /></GuestOnlyRoute>} />
+            <Route path="/reset-password" element={<GuestOnlyRoute><ResetPassword /></GuestOnlyRoute>} />
             
             <Route path="/landlord" element={<LandlordDashboard />} />
             <Route path="/submit-property" element={<SubmitProperty />} />
