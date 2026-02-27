@@ -83,10 +83,14 @@ const AdminProperties = () => {
   const handleUpdateStatus = async (propertyId, newStatus) => {
     try {
       const token = localStorage.getItem('victorsprings_token')
-      // e.g. status could be 'active', 'inactive', 'approved', 'rejected'
-      await axios.put(`${API_URL}/properties/${propertyId}/status`, { status: newStatus }, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const headers = { Authorization: `Bearer ${token}` }
+      
+      if (newStatus === 'approved') {
+        // Use the dedicated approve endpoint
+        await axios.post(`${API_URL}/properties/${propertyId}/approve`, {}, { headers })
+      } else {
+        await axios.put(`${API_URL}/properties/${propertyId}/status`, { status: newStatus }, { headers })
+      }
       
       setProperties(prev => prev.map(p => {
         if (p.id === propertyId) {
@@ -95,10 +99,10 @@ const AdminProperties = () => {
         return p
       }))
       
-      toast.success(`Property marked as ${newStatus}`)
+      toast.success(`Property ${newStatus === 'approved' ? 'approved' : `marked as ${newStatus}`}`)
     } catch (error) {
       console.error('Failed to update status', error)
-      toast.error('Failed to update property status')
+      toast.error(error.response?.data?.message || 'Failed to update property status')
     }
   }
 
@@ -123,20 +127,32 @@ const AdminProperties = () => {
       active: 'bg-green-100 text-green-800 border-green-200',
       approved: 'bg-green-100 text-green-800 border-green-200',
       pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      pending_review: 'bg-yellow-100 text-yellow-800 border-yellow-200',
       inactive: 'bg-gray-100 text-gray-800 border-gray-200',
       rejected: 'bg-red-100 text-red-800 border-red-200',
     }
     return styles[status] || 'bg-gray-100 text-gray-800'
   }
 
+  const getStatusLabel = (status) => {
+    const labels = {
+      active: 'Active',
+      approved: 'Active',
+      pending: 'Pending Review',
+      pending_review: 'Pending Review',
+      inactive: 'Inactive',
+      rejected: 'Rejected',
+    }
+    return labels[status] || status
+  }
+
   const filteredProperties = properties.filter(p => {
     const matchesSearch = (p.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
                           (p.location || '').toLowerCase().includes(searchQuery.toLowerCase())
     
-    // Simplistic filter matching for demonstration
     let matchesStatus = true
     if (filterStatus === 'active') matchesStatus = (p.status === 'active' || p.status === 'approved')
-    if (filterStatus === 'pending') matchesStatus = (p.status === 'pending')
+    if (filterStatus === 'pending') matchesStatus = (p.status === 'pending' || p.status === 'pending_review')
     if (filterStatus === 'inactive') matchesStatus = (p.status === 'inactive' || p.status === 'rejected')
       
     return matchesSearch && matchesStatus
@@ -235,7 +251,7 @@ const AdminProperties = () => {
                       </td>
                       <td className="px-4 py-3">
                         <Badge className={`${getStatusBadge(p.status)} capitalize`}>
-                          {p.status}
+                          {getStatusLabel(p.status)}
                         </Badge>
                       </td>
                       <td className="px-4 py-3 text-gray-600">
@@ -271,7 +287,7 @@ const AdminProperties = () => {
                             
                             <DropdownMenuLabel className="text-xs text-gray-500">Visibility & Status</DropdownMenuLabel>
                             
-                            {p.status === 'pending' && (
+                            {(p.status === 'pending' || p.status === 'pending_review') && (
                               <DropdownMenuItem 
                                 onClick={() => handleUpdateStatus(p.id, 'approved')}
                                 className="cursor-pointer text-green-600 focus:text-green-700"
