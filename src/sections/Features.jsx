@@ -7,8 +7,7 @@ import {
   Home,
   Users,
   BarChart3,
-  Shield,
-  ArrowRight
+  Shield
 } from 'lucide-react'
 
 const Features = () => {
@@ -146,12 +145,6 @@ const Features = () => {
                   <p className="text-gray-700/80 text-base md:text-lg leading-relaxed max-w-lg" style={{ marginLeft: isReversed ? 'auto' : undefined }}>
                     {feature.description}
                   </p>
-                  <a
-                    href="/properties"
-                    className="inline-flex items-center gap-1.5 mt-6 text-base font-semibold text-gray-800 hover:text-gray-600 transition-colors"
-                  >
-                    Learn more <ArrowRight className="h-4 w-4" />
-                  </a>
                 </div>
               </div>
             </div>

@@ -26,9 +26,11 @@ const FeaturedProperties = () => {
     const fetchFeatured = async () => {
       try {
         const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
-        // Fetch fetching max properties to display natively instead of mock elements
-        const response = await axios.get(`${API_URL}/properties/?per_page=6`)
-        setProperties(response.data.properties || [])
+        const response = await axios.get(`${API_URL}/properties/?per_page=50`)
+        const all = response.data.properties || []
+        // Shuffle and pick 3 random properties
+        const shuffled = all.sort(() => Math.random() - 0.5)
+        setProperties(shuffled.slice(0, 3))
       } catch (error) {
         console.error('Failed to fetch featured properties:', error)
       } finally {
@@ -37,6 +39,9 @@ const FeaturedProperties = () => {
     }
     fetchFeatured()
   }, [])
+
+  // Don't render section if fewer than 3 properties
+  if (!isLoading && properties.length < 3) return null
 
 
   return (

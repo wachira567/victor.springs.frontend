@@ -28,12 +28,6 @@ const Hero = () => {
     navigate(`/properties?${params.toString()}`)
   }
 
-  const stats = [
-    { value: '10K+', label: 'Properties' },
-    { value: '5K+', label: 'Happy Tenants' },
-    { value: '2K+', label: 'Verified Landlords' },
-    { value: '15+', label: 'Cities' },
-  ]
 
   return (
     <section className="relative min-h-[600px] lg:min-h-[700px] flex items-center">
@@ -133,7 +127,7 @@ const Hero = () => {
           {/* Quick Links */}
           <div className="flex flex-wrap justify-center gap-3 mt-6 animate-fade-in-up animate-delay-300">
             <span className="text-white/60 text-sm">Popular:</span>
-            {['Nairobi', 'Mombasa', 'Kisumu', 'Nakuru'].map((city) => (
+            {['Nairobi', 'Kiambu'].map((city) => (
               <button
                 key={city}
                 onClick={() => {
@@ -147,15 +141,7 @@ const Hero = () => {
             ))}
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-12 animate-fade-in-up animate-delay-400">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-white">{stat.value}</div>
-                <div className="text-sm text-white/60">{stat.label}</div>
-              </div>
-            ))}
-          </div>
+
         </div>
       </div>
 

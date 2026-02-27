@@ -9,106 +9,84 @@ const PrivacyPolicy = () => {
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">1. Introduction</h2>
             <p className="text-gray-600 leading-relaxed">
-              Victor Springs Limited ("Victor Springs", "we", "us", or "our") is committed to protecting the privacy and security of your personal information. This Privacy Policy describes how we collect, use, disclose, and safeguard your information when you visit our website, mobile application, or use any of our services (collectively, the "Platform").
-            </p>
-            <p className="text-gray-600 leading-relaxed mt-3">
-              By accessing or using our Platform, you agree to the collection and use of information in accordance with this Privacy Policy. If you do not agree, please discontinue use of the Platform.
+              Victor Springs Limited ("Victor Springs", "we", "us", or "our") is committed to protecting the privacy of our users. This Privacy Policy describes how we may collect, use, and manage information when you use our website or services (the "Platform"). By using the Platform, you acknowledge and agree to the practices described in this policy.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">2. Information We Collect</h2>
-            <p className="text-gray-600 leading-relaxed mb-3">We collect the following types of information:</p>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">2. Information We May Collect</h2>
+            <p className="text-gray-600 leading-relaxed mb-3">When you use the Platform, we may collect information including but not limited to:</p>
             <ul className="list-disc pl-6 text-gray-600 space-y-2">
-              <li><strong>Personal Identification Information:</strong> Full name, email address, phone number, national ID or passport number (for landlord KYC verification).</li>
-              <li><strong>Account Information:</strong> Login credentials, profile information, and user role (tenant, landlord, or administrator).</li>
-              <li><strong>Property Information:</strong> Property listings, images, descriptions, pricing, and location data submitted by landlords.</li>
-              <li><strong>Transaction Information:</strong> M-Pesa payment details, transaction IDs, agreement fee payments, and payment history.</li>
-              <li><strong>Usage Data:</strong> Pages visited, features used, property interactions (views, likes, clicks), browser type, IP address, and device information.</li>
-              <li><strong>Documents:</strong> Signed tenant agreements, KYC verification documents, and uploaded identification files.</li>
-              <li><strong>Communication Data:</strong> Messages, inquiries, and correspondence exchanged through the Platform.</li>
+              <li>Personal information you provide during registration or use of the Platform, such as your name, email address, and phone number.</li>
+              <li>Identification documents submitted for verification purposes.</li>
+              <li>Information related to property listings, applications, and transactions conducted through the Platform.</li>
+              <li>Technical and usage data collected automatically through your interaction with the Platform.</li>
+              <li>Any other information you choose to provide to us.</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">3. How We Use Your Information</h2>
-            <p className="text-gray-600 leading-relaxed mb-3">We use the information we collect for the following purposes:</p>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">3. How We May Use Your Information</h2>
+            <p className="text-gray-600 leading-relaxed mb-3">We may use collected information for purposes including but not limited to:</p>
             <ul className="list-disc pl-6 text-gray-600 space-y-2">
-              <li>To create and manage your account on the Platform.</li>
-              <li>To facilitate property listings, searches, applications, and tenant agreements.</li>
-              <li>To process payments via M-Pesa for agreement fees and deposits.</li>
-              <li>To verify landlord identity through our KYC process.</li>
-              <li>To match tenants with suitable properties and facilitate site visits.</li>
-              <li>To send you notifications about your applications, viewings, and account activity.</li>
-              <li>To improve our Platform's functionality, user experience, and content.</li>
-              <li>To detect and prevent fraud, unauthorized access, and other illegal activities.</li>
-              <li>To comply with applicable laws, regulations, and legal obligations in Kenya.</li>
+              <li>Operating, maintaining, and improving the Platform and our services.</li>
+              <li>Processing transactions and managing user accounts.</li>
+              <li>Facilitating communications between users of the Platform.</li>
+              <li>Verifying user identity and preventing fraudulent activity.</li>
+              <li>Complying with applicable laws, regulations, and legal processes.</li>
+              <li>Any other purpose related to the operation and improvement of our services.</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">4. Information Sharing and Disclosure</h2>
-            <p className="text-gray-600 leading-relaxed mb-3">We may share your information in the following circumstances:</p>
-            <ul className="list-disc pl-6 text-gray-600 space-y-2">
-              <li><strong>With Landlords/Tenants:</strong> When you submit a tenant application, your name, contact details, and uploaded documents are shared with the relevant property landlord or administrator for review.</li>
-              <li><strong>Payment Processors:</strong> Transaction data is shared with Safaricom (M-Pesa) for payment processing purposes.</li>
-              <li><strong>Service Providers:</strong> We use third-party services (e.g., Cloudinary for image hosting, email providers) that may access your data solely to perform services on our behalf.</li>
-              <li><strong>Legal Compliance:</strong> We may disclose your information to law enforcement agencies, regulatory authorities, or courts when required by law or to protect our rights and safety.</li>
-              <li><strong>Business Transfers:</strong> In the event of a merger, acquisition, or sale of assets, your data may be transferred as part of the transaction.</li>
-            </ul>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">4. Information Sharing</h2>
+            <p className="text-gray-600 leading-relaxed">
+              We may share your information with other users of the Platform as necessary to facilitate the services (for example, sharing applicant details with property owners for application review). We may also share information with service providers who assist in operating the Platform, and with law enforcement or regulatory authorities when required by law or to protect our rights, property, or safety, or those of others.
+            </p>
             <p className="text-gray-600 leading-relaxed mt-3">
-              We do <strong>not</strong> sell, rent, or trade your personal information to third parties for marketing purposes.
+              We do not sell your personal information to third parties for marketing purposes.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">5. Data Security</h2>
             <p className="text-gray-600 leading-relaxed">
-              We implement industry-standard security measures to protect your personal information, including encrypted data transmission (SSL/TLS), secure server infrastructure, access controls, and regular security audits. However, no method of transmission over the internet is 100% secure, and we cannot guarantee absolute security. You are responsible for maintaining the confidentiality of your account credentials.
+              We take reasonable measures to protect information collected through the Platform. However, no method of electronic transmission or storage is completely secure, and we cannot guarantee absolute security. You are responsible for maintaining the confidentiality of your account credentials and for any activity that occurs under your account.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">6. Data Retention</h2>
             <p className="text-gray-600 leading-relaxed">
-              We retain your personal information for as long as your account is active or as needed to provide our services. We may also retain data as required by applicable Kenyan laws, to resolve disputes, enforce our agreements, and for legitimate business purposes. When your data is no longer needed, we will securely delete or anonymize it.
+              We may retain your information for as long as necessary to provide our services, comply with legal obligations, resolve disputes, and enforce our agreements. The specific retention period may vary depending on the context and our legal and business requirements.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">7. Your Rights</h2>
-            <p className="text-gray-600 leading-relaxed mb-3">Under the Kenya Data Protection Act, 2019, you have the right to:</p>
-            <ul className="list-disc pl-6 text-gray-600 space-y-2">
-              <li>Access the personal data we hold about you.</li>
-              <li>Request correction or updating of inaccurate personal data.</li>
-              <li>Request deletion of your personal data, subject to legal obligations.</li>
-              <li>Object to the processing of your personal data.</li>
-              <li>Withdraw consent for data processing where consent was the basis.</li>
-              <li>Lodge a complaint with the Office of the Data Protection Commissioner.</li>
-            </ul>
-            <p className="text-gray-600 leading-relaxed mt-3">
-              To exercise any of these rights, contact us at <a href="mailto:victorspringsltd@gmail.com" className="text-victor-green hover:underline">victorspringsltd@gmail.com</a>.
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">7. Your Choices</h2>
+            <p className="text-gray-600 leading-relaxed">
+              You may update certain account information through the Platform. If you wish to make inquiries regarding your personal information, you may contact us using the details below. Please note that certain information may need to be retained for legal, regulatory, or legitimate business purposes, and any requests will be assessed on a case-by-case basis in accordance with applicable law.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">8. Third-Party Links</h2>
             <p className="text-gray-600 leading-relaxed">
-              Our Platform may contain links to third-party websites or services. We are not responsible for the privacy practices or content of these external sites. We encourage you to review their privacy policies before providing any personal information.
+              The Platform may contain links to third-party websites or services that are not operated by us. We are not responsible for the privacy practices or content of these external sites and encourage you to review their policies independently.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">9. Changes to This Policy</h2>
             <p className="text-gray-600 leading-relaxed">
-              We may update this Privacy Policy from time to time. Any changes will be posted on this page with an updated revision date. Continued use of the Platform after changes constitutes acceptance of the revised policy.
+              We reserve the right to update this Privacy Policy at any time. Changes will be posted on this page with an updated revision date. Your continued use of the Platform after any changes constitutes acceptance of the revised policy.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">10. Contact Us</h2>
             <p className="text-gray-600 leading-relaxed">
-              If you have any questions about this Privacy Policy, please contact us at:
+              If you have questions about this Privacy Policy, you may contact us at:
             </p>
             <div className="mt-3 text-gray-600">
               <p><strong>Victor Springs Limited</strong></p>
