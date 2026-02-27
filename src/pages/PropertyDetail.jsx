@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import axios from 'axios'
 import { toast } from 'sonner'
+import { downloadFile } from '@/lib/downloadFile'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -42,12 +43,7 @@ import TenantApplicationBox from '@/components/tenant/TenantApplicationBox'
 
 const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || ''
 
-// Helper: transform Cloudinary URL to force download via fl_attachment flag
-const getCloudinaryDownloadUrl = (url) => {
-  if (!url) return url
-  // Insert fl_attachment after /upload/ to force browser download
-  return url.replace('/upload/', '/upload/fl_attachment/')
-}
+// No longer need the Cloudinary URL transform — downloadFile handles everything
 
 const PropertyDetail = () => {
   const { id } = useParams()
@@ -514,15 +510,13 @@ const PropertyDetail = () => {
                               <p className="text-xs text-gray-500 uppercase">PDF Document</p>
                             </div>
                           </div>
-                          <a
-                            href={getCloudinaryDownloadUrl(property.tenant_agreement_url)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center w-full sm:w-auto rounded-md px-4 py-2 text-sm font-medium bg-victor-green text-white hover:bg-victor-green-dark transition-colors"
+                          <button
+                            onClick={() => downloadFile(property.tenant_agreement_url, `Tenancy_Agreement_${property.id}.pdf`)}
+                            className="inline-flex items-center justify-center w-full sm:w-auto rounded-md px-4 py-2 text-sm font-medium bg-victor-green text-white hover:bg-victor-green-dark transition-colors cursor-pointer"
                           >
                             <FileDown className="h-4 w-4 mr-2" />
                             Download PDF
-                          </a>
+                          </button>
                         </div>
                         <p className="text-[10px] text-gray-400 text-center border-t pt-3 italic">
                           Document ID: {property.id}-TA-VS

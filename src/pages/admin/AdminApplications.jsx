@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/utils'
+import { downloadFile } from '@/lib/downloadFile'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
   DialogDescription, DialogFooter
@@ -230,10 +231,10 @@ const AdminApplications = () => {
               </a>
             </div>
             {app.signed_agreement_url && (
-              <a href={app.signed_agreement_url} target="_blank" rel="noreferrer" className="flex items-center border border-blue-200 bg-blue-50 p-2.5 rounded hover:bg-blue-100 transition-colors">
+              <button onClick={() => downloadFile(app.signed_agreement_url, `Agreement_${app.first_name}_${app.last_name}.pdf`)} className="flex items-center border border-blue-200 bg-blue-50 p-2.5 rounded hover:bg-blue-100 transition-colors w-full cursor-pointer">
                 <FileDown className="h-4 w-4 mr-2 text-blue-800" />
                 <span className="text-sm font-medium text-blue-800">Download Signed Agreement</span>
-              </a>
+              </button>
             )}
             {app.digital_consent && (
               <div className="mt-3 text-xs text-gray-500 flex items-start gap-2 bg-gray-50 p-2 rounded">
@@ -293,7 +294,7 @@ const AdminApplications = () => {
           <div className="flex flex-wrap gap-2">
             {app.id_document_front && <a href={app.id_document_front} target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline border rounded px-2 py-1 bg-white">View ID Front</a>}
             {app.id_document_back && <a href={app.id_document_back} target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline border rounded px-2 py-1 bg-white">View ID Back</a>}
-            {app.signed_agreement_url && <a href={app.signed_agreement_url} target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline border rounded px-2 py-1 bg-white">Download Agreement</a>}
+            {app.signed_agreement_url && <button onClick={() => downloadFile(app.signed_agreement_url, `Agreement_${app.first_name}_${app.last_name}.pdf`)} className="text-xs text-blue-600 hover:underline border rounded px-2 py-1 bg-white cursor-pointer">Download Agreement</button>}
           </div>
           {isPending(app.status) && (
             <div className="flex gap-2 pt-2 border-t">

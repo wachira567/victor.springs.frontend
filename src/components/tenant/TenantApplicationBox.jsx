@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ShieldAlert, FileText, Upload, CheckCircle2, X, FileDown, Phone } from 'lucide-react'
 import { toast } from 'sonner'
+import { downloadFile } from '@/lib/downloadFile'
 import axios from 'axios'
 
 const TenantApplicationBox = ({ property, user, onClose }) => {
@@ -338,14 +339,12 @@ const TenantApplicationBox = ({ property, user, onClose }) => {
                     <h4 className="font-semibold text-blue-900">Step 1: Download & Sign Agreement</h4>
                     <p className="text-sm text-blue-800">Please download and sign the agreement. Upload the signed copy below.</p>
                   </div>
-                  <a 
-                    href={property.tenant_agreement_url.replace('/upload/', '/upload/fl_attachment/')}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center shrink-0 rounded-md px-4 py-2 text-sm font-medium bg-white border border-blue-200 text-blue-700 hover:bg-blue-100 hover:text-blue-800 transition-colors"
+                  <button 
+                    onClick={() => downloadFile(property.tenant_agreement_url, `Tenancy_Agreement_${property.id}.pdf`)}
+                    className="inline-flex items-center shrink-0 rounded-md px-4 py-2 text-sm font-medium bg-white border border-blue-200 text-blue-700 hover:bg-blue-100 hover:text-blue-800 transition-colors cursor-pointer"
                   >
                     <FileDown className="mr-2 h-4 w-4" /> Download PDF
-                  </a>
+                  </button>
                 </div>
               )}
 
